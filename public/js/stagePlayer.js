@@ -11,6 +11,7 @@
                         <video class="mask-bg" muted playsinline preload="auto" src="${r.video}" hidden></video>
                         <video class="main" playsinline preload="metadata" src="${r.video}"></video>
                     </div>
+                    <audio class="voiceover" preload="auto" src="${r.audio || ''}" hidden></audio>
                     <div class="boxes"></div>
                     <div class="capview"></div>
                     <div class="lay-sw" hidden>
@@ -99,12 +100,29 @@
             c.built = true;
 
             const main = $('video.main', el);
+            const voice = $('audio.voiceover', el);
             const seek = $('.seek', el);
             const tm = $('.tm', el);
             main.ontimeupdate = () => {
                 if (main.duration) seek.value = Math.round(main.currentTime / main.duration * 1000);
                 tm.textContent = `${fmtTime(main.currentTime)} / ${fmtTime(main.duration || r.duration)}`;
+                if (voice && voice.src && !voice.paused && Math.abs(voice.currentTime - main.currentTime) > 0.25) {
+                    voice.currentTime = main.currentTime;
+                }
                 this.renderKaraoke(c);
+            };
+            main.onended = () => {
+                if (voice) { voice.pause(); voice.currentTime = 0; }
+                const icon = $('[data-a=play] i', el);
+                if (icon) icon.className = 'fa-solid fa-play';
+                const bigPlay = $('.big-play', el);
+                if (bigPlay) bigPlay.hidden = false;
+            };
+
+            const stage = $('.stage', el);
+            stage.onclick = e => {
+                if (e.target.closest('.bbox') || e.target.closest('.rm') || e.target.closest('.rs')) return;
+                window.togglePlayCard && window.togglePlayCard(c);
             };
 
             this.wireStageInteractions(c);
@@ -117,15 +135,20 @@
             stage.onpointerdown = e => {
                 const boxEl = e.target.closest('.bbox');
                 if (!boxEl || e.target.closest('.rm')) return;
+                e.stopPropagation();
+                e.preventDefault();
                 const i = +boxEl.dataset.i;
                 const b = c.tools.blur[i];
+                if (!b) return;
                 const isResize = e.target.classList.contains('rs');
                 const rect = stage.getBoundingClientRect();
-                drag = { i, b, isResize, startX: e.clientX, startY: e.clientY, initX: b.x, initY: b.y, initW: b.w, initH: b.h, rect };
-                stage.setPointerCapture(e.pointerId);
+                drag = { i, b, isResize, startX: e.clientX, startY: e.clientY, initX: b.x, initY: b.y, initW: b.w, initH: b.h, rect, pointerId: e.pointerId };
+                try { stage.setPointerCapture(e.pointerId); } catch (_) {}
             };
             stage.onpointermove = e => {
                 if (!drag) return;
+                e.stopPropagation();
+                e.preventDefault();
                 const dx = (e.clientX - drag.startX) / drag.rect.width * 100;
                 const dy = (e.clientY - drag.startY) / drag.rect.height * 100;
                 if (drag.isResize) {
@@ -135,9 +158,22 @@
                     drag.b.x = clamp(drag.initX + dx, 0, 100 - drag.b.w);
                     drag.b.y = clamp(drag.initY + dy, 0, 100 - drag.b.h);
                 }
-                this.renderBlurBoxes(c);
+                const el = $(`.bbox[data-i="${drag.i}"]`, stage);
+                if (el) {
+                    el.style.left = drag.b.x + '%';
+                    el.style.top = drag.b.y + '%';
+                    el.style.width = drag.b.w + '%';
+                    el.style.height = drag.b.h + '%';
+                }
             };
-            stage.onpointerup = () => { drag = null; };
+            stage.onpointerup = e => {
+                if (drag) {
+                    try { stage.releasePointerCapture(drag.pointerId); } catch (_) {}
+                    drag = null;
+                    this.renderBlurBoxes(c);
+                }
+            };
+            stage.onpointercancel = () => { drag = null; };
         },
 
         addBlurBox(c) {

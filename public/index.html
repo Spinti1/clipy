@@ -379,7 +379,11 @@ function wireCard(c) {
         const tg = e.target;
         if (tg.classList.contains('seek')) {
             const v = $('video.main', el);
-            if (v && v.duration) v.currentTime = (tg.value / 1000) * v.duration;
+            const voice = $('audio.voiceover', el);
+            if (v && v.duration) {
+                v.currentTime = (tg.value / 1000) * v.duration;
+                if (voice && voice.src) voice.currentTime = v.currentTime;
+            }
         }
         if (tg.dataset.m) {
             c.tools.mask[tg.dataset.m] = tg.type === 'checkbox' ? tg.checked : parseFloat(tg.value);
@@ -399,20 +403,28 @@ function wireCard(c) {
     };
 }
 
+window.togglePlayCard = function(c) { togglePlay(c); };
+
 function togglePlay(c) {
     const v = $('video.main', c.el);
     const bg = $('video.mask-bg', c.el);
+    const voice = $('audio.voiceover', c.el);
     const icon = $('[data-a=play] i', c.el);
     const bigPlay = $('.big-play', c.el);
     if (!v) return;
     if (v.paused) {
-        v.play();
-        if (!bg.hidden) bg.play();
+        v.play().catch(() => {});
+        if (!bg.hidden) bg.play().catch(() => {});
+        if (voice && voice.src && voice.paused) {
+            voice.currentTime = v.currentTime;
+            voice.play().catch(() => {});
+        }
         if (icon) icon.className = 'fa-solid fa-pause';
         if (bigPlay) bigPlay.hidden = true;
     } else {
         v.pause();
         if (!bg.hidden) bg.pause();
+        if (voice) voice.pause();
         if (icon) icon.className = 'fa-solid fa-play';
         if (bigPlay) bigPlay.hidden = false;
     }

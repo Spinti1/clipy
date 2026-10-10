@@ -65,11 +65,16 @@ describe('YouTube Real Download Integration in Pipeline', () => {
     assert.ok(finishedJob.result.width > 0);
     assert.ok(finishedJob.result.height > 0);
 
-    // 5. Verify the video file is physically served via HTTP
+    // 5. Verify the video file and synthesized audio are physically served via HTTP
     const videoHttpRes = await fetch(`${baseUrl}${finishedJob.result.video}`, { method: 'HEAD' });
     assert.equal(videoHttpRes.status, 200);
     assert.equal(videoHttpRes.headers.get('content-type'), 'video/mp4');
     assert.ok(parseInt(videoHttpRes.headers.get('content-length'), 10) > 10000);
+
+    assert.ok(finishedJob.result.audio);
+    assert.ok(finishedJob.result.audio.startsWith('/files/'));
+    const audioHttpRes = await fetch(`${baseUrl}${finishedJob.result.audio}`, { method: 'HEAD' });
+    assert.equal(audioHttpRes.status, 200);
 
     // 6. Verify export references this exact downloaded video
     const expRes = await fetch(`${baseUrl}/api/jobs/${jobId}/export`, {

@@ -32,15 +32,24 @@
                 // Stream setup
                 const canvasStream = canvas.captureStream(30);
 
-                // Attach audio if available
+                // Attach voice audio track
                 let audioTrack = null;
                 try {
-                    if (main.captureStream) {
-                        const vStream = main.captureStream();
-                        const tracks = vStream.getAudioTracks();
-                        if (tracks.length > 0) audioTrack = tracks[0];
+                    const streamSource = main.captureStream ? main.captureStream() : (main.mozCaptureStream ? main.mozCaptureStream() : null);
+                    if (streamSource && streamSource.getAudioTracks().length > 0) {
+                        audioTrack = streamSource.getAudioTracks()[0];
                     }
                 } catch (_) {}
+
+                if (!audioTrack) {
+                    try {
+                        const voiceEl = $('audio.voiceover', c.el);
+                        const vStream = voiceEl && (voiceEl.captureStream ? voiceEl.captureStream() : (voiceEl.mozCaptureStream ? voiceEl.mozCaptureStream() : null));
+                        if (vStream && vStream.getAudioTracks().length > 0) {
+                            audioTrack = vStream.getAudioTracks()[0];
+                        }
+                    } catch (_) {}
+                }
 
                 if (audioTrack) {
                     canvasStream.addTrack(audioTrack);

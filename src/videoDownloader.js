@@ -264,10 +264,74 @@ async function downloadVideo(url, targetFile) {
   });
 }
 
+/**
+ * Merges video and audio file using ffmpeg, replacing/muting the original video's audio
+ */
+function mergeVideoAndAudio(videoPath, audioPath, outputPath) {
+  return new Promise((resolve) => {
+    const ffmpeg = getFfmpegPath();
+    const dest = outputPath || path.join(path.dirname(videoPath), `merged_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.mp4`);
+
+    const args = [
+      '-y',
+      '-i', videoPath,
+      '-i', audioPath,
+      '-map', '0:v:0',
+      '-map', '1:a:0',
+      '-c:v', 'copy',
+      '-c:a', 'aac',
+      '-af', 'apad',
+      '-shortest',
+      dest
+    ];
+
+    const proc = spawn(ffmpeg, args);
+    let stderr = '';
+
+    const timer = setTimeout(() => {
+      try { proc.kill(); } catch (_) {}
+    }, 30000);
+
+    proc.stderr.on('data', d => { stderr += d; });
+
+    proc.on('close', async (code) => {
+      clearTimeout(timer);
+      if (code === 0 && fs.existsSync(dest) && fs.statSync(dest).size > 1000) {
+        resolve({
+          ok: true,
+          filePath: dest,
+          videoUrl: '/files/' + path.basename(dest)
+        });
+      } else {
+        console.warn(`[videoDownloader] ffmpeg merge error (code ${code}):`, stderr.slice(0, 300));
+        resolve({
+          ok: false,
+          error: stderr || `Exit code ${code}`,
+          filePath: videoPath,
+          videoUrl: '/files/' + path.basename(videoPath)
+        });
+      }
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      console.warn(`[videoDownloader] spawn ffmpeg error:`, err.message);
+      resolve({
+        ok: false,
+        error: err.message,
+        filePath: videoPath,
+        videoUrl: '/files/' + path.basename(videoPath)
+      });
+    });
+  });
+}
+
 module.exports = {
   downloadVideo,
   probeVideo,
+  mergeVideoAndAudio,
   getFfmpegDir,
   getFfmpegPath,
   getFfprobePath
 };
+

@@ -1,5 +1,7 @@
 const crypto = require('crypto');
+const fs = require('fs');
 const videoDownloader = require('./videoDownloader');
+const voiceService = require('./voiceService');
 
 const jobsStore = new Map();
 
@@ -82,19 +84,35 @@ async function advanceJob(job, script, defaultDuration) {
     await new Promise(r => setTimeout(r, 200));
 
     job.stage = 'voice';
-    job.status = 'Generez vocea...';
-    job.progress = 70;
-    await new Promise(r => setTimeout(r, 250));
+    job.status = 'Generez vocea AI...';
+    job.progress = 65;
+
+    // Real voiceover synthesis in requested voice persona and language
+    const synthResult = await voiceService.synthesizeSpeech({
+      text: script,
+      voiceKey: job.voice,
+      lang: job.lang,
+      speed: job.speed
+    });
 
     job.stage = 'sync';
     job.status = 'Sincronizez audio cu imaginea...';
     job.progress = 85;
-    await new Promise(r => setTimeout(r, 200));
+
+    // Mute original video audio and layer synthesized voiceover
+    let finalVideoUrl = dlResult.videoUrl;
+    let finalFilePath = dlResult.filePath;
+    if (dlResult.filePath && synthResult.filePath && fs.existsSync(dlResult.filePath) && fs.existsSync(synthResult.filePath)) {
+      const merged = await videoDownloader.mergeVideoAndAudio(dlResult.filePath, synthResult.filePath);
+      if (merged.ok) {
+        finalVideoUrl = merged.videoUrl;
+        finalFilePath = merged.filePath;
+      }
+    }
 
     const realDuration = (dlResult && dlResult.duration) ? dlResult.duration : defaultDuration;
     const realWidth = (dlResult && dlResult.width) ? dlResult.width : 1080;
     const realHeight = (dlResult && dlResult.height) ? dlResult.height : 1920;
-    const realVideo = (dlResult && dlResult.videoUrl) ? dlResult.videoUrl : '/assets/sample.mp4';
     const realTitle = (dlResult && dlResult.title) ? dlResult.title : (job.uploadName || 'Video procesat');
 
     job.done = true;
@@ -106,7 +124,10 @@ async function advanceJob(job, script, defaultDuration) {
       duration: Math.round(realDuration * 10) / 10,
       width: realWidth,
       height: realHeight,
-      video: realVideo,
+      video: finalVideoUrl,
+      originalVideo: dlResult.videoUrl,
+      audio: synthResult.audioUrl,
+      audioDuration: synthResult.duration,
       text: script,
       plan: {
         mode: job.fit,
