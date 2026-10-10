@@ -238,7 +238,8 @@ function toast(msg) {
     toastTimer = setTimeout(() => t.classList.remove('show'), 3600);
 }
 
-let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || '';
+const CLOUD_BACKEND = 'https://restoration-remember-noted-cancellation.trycloudflare.com';
+let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? CLOUD_BACKEND : '');
 if (API_BASE) API_BASE = API_BASE.replace(/\/+$/, '');
 
 function resolveUrl(path) {
@@ -253,6 +254,14 @@ function resolveUrl(path) {
 }
 window.resolveUrl = resolveUrl;
 window.API_BASE = API_BASE;
+
+// Ping automat la fiecare 10 minute pentru menținerea conexiunii active
+setInterval(async () => {
+    try {
+        await api('/api/ping');
+        console.log('[Clipy] Ping keep-alive efectuat cu succes la', new Date().toLocaleTimeString());
+    } catch (_) {}
+}, 10 * 60 * 1000);
 
 async function api(path, opts = {}) {
     const init = {

@@ -100,9 +100,13 @@ const state = {
   history: []
 };
 
-// API: Health check
+// API: Health check & Ping Keep-Alive
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, status: 'healthy', uptime: process.uptime() });
+});
+
+app.get('/api/ping', (req, res) => {
+  res.json({ ok: true, status: 'alive', time: new Date().toISOString(), uptime: process.uptime() });
 });
 
 // API: Config
@@ -327,7 +331,12 @@ function startServer(port = 3000) {
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   startServer(PORT).then(server => {
-    console.log(`Viralio Speed Server running at http://localhost:${server.address().port}`);
+    console.log(`Clipy Server running at http://localhost:${server.address().port}`);
+    // Auto keep-alive ping every 10 minutes (600,000 ms)
+    setInterval(() => {
+      fetch(`http://localhost:${PORT}/api/ping`).catch(() => {});
+      console.log(`[keep-alive] Ping periodic efectuat la ${new Date().toLocaleTimeString()}`);
+    }, 10 * 60 * 1000);
   });
 }
 

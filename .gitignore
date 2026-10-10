@@ -5,5 +5,5 @@ data/
 public/assets/merged_*.mp4
 *.log
 .env
-
 .vercel
+cloudflared.exe

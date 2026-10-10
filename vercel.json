@@ -6,8 +6,12 @@
       "destination": "/api/config.json"
     },
     {
-      "source": "/api/health",
-      "destination": "/api/health.json"
+      "source": "/api/(.*)",
+      "destination": "https://restoration-remember-noted-cancellation.trycloudflare.com/api/$1"
+    },
+    {
+      "source": "/files/(.*)",
+      "destination": "https://restoration-remember-noted-cancellation.trycloudflare.com/files/$1"
     }
   ]
 }
