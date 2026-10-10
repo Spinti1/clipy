@@ -100,8 +100,8 @@
             </div>
         </div>
 
-        <button id="goBtn" class="gen-btn" type="button"><i class="fa-solid fa-bolt"></i> Pornește <span class="badge" id="goCost">3 cr + voce</span></button>
-        <div class="hint"><span id="priceHint">Link 3 cr, o singură dată · voce 1 cr / 1.000 caractere</span><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd></span></div>
+        <button id="goBtn" class="gen-btn" type="button"><i class="fa-solid fa-bolt"></i> Pornește <span class="badge" id="goCost">Gratuit ⚡</span></button>
+        <div class="hint"><span id="priceHint">100% Gratuit · Fără credite · Nelimitat</span><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd></span></div>
     </section>
 
     <!-- ============ REZULTATE ============ -->
@@ -151,12 +151,64 @@
 <div id="topup-modal" class="modal-backdrop" hidden>
     <div class="modal-card">
         <button class="icon-btn" id="closeTopupBtn" aria-label="Închide"><i class="fa-solid fa-xmark"></i></button>
-        <div class="modal-icon"><i class="fa-solid fa-coins"></i></div>
-        <div class="modal-title">Top-up Credite</div>
-        <p class="modal-sub">Încarcă credite instant pentru a procesa videoclipuri noi.</p>
+        <div class="modal-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="modal-title">Clipy Speed</div>
+        <p class="modal-sub">Clipy este 100% gratuit și nelimitat.</p>
         <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="gen-btn" id="add50CreditsBtn"><i class="fa-solid fa-plus"></i> Adaugă +50 credite (Gratuit Demo)</button>
-            <button class="ghost-btn" id="add200CreditsBtn" style="justify-content:center"><i class="fa-solid fa-bolt"></i> Adaugă +200 credite</button>
+            <button class="gen-btn" id="add50CreditsBtn" style="justify-content:center"><i class="fa-solid fa-bolt"></i> Continuă gratuit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Conectare Server Backend -->
+<div id="backend-modal" class="modal-backdrop" hidden>
+    <div class="modal-card backend-card">
+        <button class="icon-btn" id="closeBackendBtn" aria-label="Închide"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-icon"><i class="fa-solid fa-server"></i></div>
+        <div class="modal-title">Conectare Server Clipy</div>
+        <p class="modal-sub">Pentru a descărca video de pe YouTube, a traduce și a genera vocile cu IA, Clipy folosește un motor de calcul dedicat.</p>
+        
+        <div class="backend-opts">
+            <!-- Opțiunea 1: Localhost -->
+            <div class="backend-opt">
+                <div class="opt-hd">
+                    <span class="opt-tag tag-green">Recomandat pe PC-ul tău</span>
+                    <div class="opt-title"><i class="fa-solid fa-laptop-code"></i> Deschide pe Localhost</div>
+                </div>
+                <p class="opt-desc">Serverul tău complet cu FFmpeg și yt-dlp rulează deja pe calculatorul tău. Dacă deschizi Clipy pe localhost, totul funcționează 100% instant și nelimitat fără eroare 404.</p>
+                <a href="http://localhost:3000" target="_blank" class="gen-btn" style="text-decoration:none; justify-content:center; display:flex;">
+                    <i class="fa-solid fa-bolt"></i> Deschide http://localhost:3000
+                </a>
+            </div>
+
+            <!-- Opțiunea 2: Render Cloud -->
+            <div class="backend-opt">
+                <div class="opt-hd">
+                    <span class="opt-tag tag-purple">Cloud 24/7 Permanent</span>
+                    <div class="opt-title"><i class="fa-solid fa-cloud"></i> Conectează Render Cloud</div>
+                </div>
+                <p class="opt-desc">Vrei ca linkul Vercel să poată fi accesat de oricine de oriunde? Pornește gratuit backend-ul pe Render cu 1 singur click:</p>
+                <a href="https://render.com/deploy?repo=https://github.com/Spinti1/clipy" target="_blank" rel="noopener noreferrer" class="ghost-btn" style="text-decoration:none; justify-content:center; display:flex; color:var(--accent); border-color:var(--accent-border);">
+                    <i class="fa-solid fa-rocket"></i> Lansează pe Render (1-Click Deploy)
+                </a>
+                <div class="prompt-wrap url-row" style="margin-top:4px;">
+                    <i class="fa-solid fa-link url-ico"></i>
+                    <input type="text" id="backendUrlInput" class="url-input v-input" placeholder="https://clipy-backend.onrender.com">
+                    <button type="button" id="saveBackendUrlBtn" class="gen-btn" style="padding:6px 14px; font-size:0.75rem; border-radius:8px; margin:4px; white-space:nowrap;">Salvează</button>
+                </div>
+            </div>
+
+            <!-- Opțiunea 3: Tunel PC -->
+            <div class="backend-opt">
+                <div class="opt-hd">
+                    <span class="opt-tag tag-blue">Tunel Instant</span>
+                    <div class="opt-title"><i class="fa-solid fa-tower-broadcast"></i> Conectează direct la PC</div>
+                </div>
+                <p class="opt-desc">Conectează această pagină Vercel direct la serverul care rulează acum pe calculatorul tău printr-un tunel securizat.</p>
+                <button type="button" id="connectTunnelBtn" class="ghost-btn" style="width:100%; justify-content:center;">
+                    <i class="fa-solid fa-plug"></i> Conectează Tunelul PC-ului
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -203,13 +255,26 @@ window.resolveUrl = resolveUrl;
 window.API_BASE = API_BASE;
 
 async function api(path, opts = {}) {
-    const init = { method: opts.method || 'GET', headers: {} };
+    const init = {
+        method: opts.method || 'GET',
+        headers: {
+            'Bypass-Tunnel-Reminder': '1'
+        }
+    };
     if (opts.body) {
         init.headers['Content-Type'] = 'application/json';
         init.body = JSON.stringify(opts.body);
     }
     const targetUrl = resolveUrl(path);
-    const r = await fetch(targetUrl, init);
+    const r = await fetch(targetUrl, init).catch(err => {
+        throw new Error('Eroare conexiune: ' + (err.message || 'Server inaccesibil'));
+    });
+    if (r.status === 404 && path.startsWith('/api/jobs')) {
+        if (typeof window.openBackendModal === 'function') {
+            window.openBackendModal();
+        }
+        throw new Error('Serverul backend nu este conectat pe acest domeniu Vercel. Deschide http://localhost:3000 sau conectează Render.');
+    }
     const data = await r.json().catch(() => ({}));
     if (!r.ok || data.ok === false) {
         throw new Error(data.error || `Eroare ${r.status}`);
@@ -461,6 +526,11 @@ window.startBatchJobs = async function() {
         toast('Adaugă cel puțin un link sau urcă un video.');
         return;
     }
+    if (window.isBackendStatic && !API_BASE && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        if (typeof window.openBackendModal === 'function') window.openBackendModal();
+        toast('Conectează serverul backend pentru a procesa videoclipul ⚡');
+        return;
+    }
     const btn = $('#goBtn');
     btn.disabled = true;
     try {
@@ -629,18 +699,48 @@ const DEFAULT_CONFIG = {
     $('#lang').value = state.lang;
     SetupPanel.renderVoices();
     SetupPanel.refreshRows();
+    window.openBackendModal = function() {
+        const m = $('#backend-modal');
+        if (!m) return;
+        const inp = $('#backendUrlInput');
+        if (inp) inp.value = localStorage.getItem('clipy_backend_url') || '';
+        m.hidden = false;
+    };
+    window.closeBackendModal = function() {
+        const m = $('#backend-modal');
+        if (m) m.hidden = true;
+    };
+
+    if ($('#closeBackendBtn')) $('#closeBackendBtn').onclick = window.closeBackendModal;
+    if ($('#backend-modal')) {
+        $('#backend-modal').onclick = e => {
+            if (e.target.id === 'backend-modal') window.closeBackendModal();
+        };
+    }
+    if ($('#saveBackendUrlBtn')) {
+        $('#saveBackendUrlBtn').onclick = () => {
+            const v = ($('#backendUrlInput').value || '').trim().replace(/\/+$/, '');
+            if (v) {
+                localStorage.setItem('clipy_backend_url', v);
+                toast('Server salvat! Reîncărcare... ⚡');
+            } else {
+                localStorage.removeItem('clipy_backend_url');
+                toast('Configurație resetată la local.');
+            }
+            setTimeout(() => location.reload(), 400);
+        };
+    }
+    if ($('#connectTunnelBtn')) {
+        $('#connectTunnelBtn').onclick = () => {
+            localStorage.setItem('clipy_backend_url', 'https://clipy-api-demo.loca.lt');
+            toast('Tunel conectat! Reîncărcare... ⚡');
+            setTimeout(() => location.reload(), 400);
+        };
+    }
+
     const backendBtn = $('#backendConnBtn');
     if (backendBtn) {
-        backendBtn.onclick = () => {
-            const cur = localStorage.getItem('clipy_backend_url') || '';
-            const input = prompt('Introdu URL-ul serverului Render (ex: https://clipy-backend.onrender.com) sau lasă gol pentru local:', cur);
-            if (input !== null) {
-                const val = input.trim().replace(/\/+$/, '');
-                if (val) localStorage.setItem('clipy_backend_url', val);
-                else localStorage.removeItem('clipy_backend_url');
-                location.reload();
-            }
-        };
+        backendBtn.onclick = () => window.openBackendModal();
     }
 
     async function checkBackend() {
@@ -649,16 +749,23 @@ const DEFAULT_CONFIG = {
         if (!btn || !txt) return;
         try {
             const h = await api('/api/health').catch(() => null);
-            if (h && h.ok) {
-                btn.classList.remove('disconnected');
-                txt.textContent = API_BASE ? 'Render ⚡' : 'Conectat ⚡';
+            if (h && h.ok && !h.static) {
+                btn.className = 'vn-backend-btn';
+                txt.textContent = API_BASE ? 'Server Cloud ⚡' : 'Server Activ ⚡';
+                window.isBackendStatic = false;
+            } else if (h && h.static) {
+                btn.className = 'vn-backend-btn warning';
+                txt.textContent = 'Conectează Server ⚡';
+                window.isBackendStatic = true;
             } else {
-                btn.classList.add('disconnected');
-                txt.textContent = 'Deconectat';
+                btn.className = 'vn-backend-btn disconnected';
+                txt.textContent = 'Server Inactiv';
+                window.isBackendStatic = false;
             }
         } catch {
-            btn.classList.add('disconnected');
-            txt.textContent = 'Deconectat';
+            btn.className = 'vn-backend-btn disconnected';
+            txt.textContent = 'Server Inactiv';
+            window.isBackendStatic = false;
         }
     }
     checkBackend();

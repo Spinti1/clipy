@@ -135,8 +135,7 @@
             const nf = uploads.size;
             $('#linkCount').textContent = rows.length + (rows.length === 1 ? ' link' : ' linkuri') + (nf ? ` · ${nf} fișiere` : '');
             const n = this.parseLinks().length + uploads.size;
-            const c = CFG ? CFG.cost : 3;
-            $('#goCost').textContent = `${fmtX(n > 1 ? n * c : c)} cr + voce`;
+            $('#goCost').textContent = 'Gratuit ⚡';
         },
 
         parseLinks() {
