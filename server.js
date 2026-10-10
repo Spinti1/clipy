@@ -120,6 +120,60 @@ app.get('/api/history', (req, res) => {
   res.json({ items: state.history });
 });
 
+const uploadManager = require('./src/uploadManager.js');
+
+// Raw body parser for chunk uploads
+app.put('/api/uploads/:id', express.raw({ type: 'application/octet-stream', limit: '100mb' }), (req, res) => {
+  try {
+    const uploadId = req.params.id;
+    const offset = parseInt(req.query.offset, 10) || 0;
+    const result = uploadManager.appendChunk(uploadId, offset, req.body || Buffer.alloc(0));
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/uploads', (req, res) => {
+  try {
+    const { name, size } = req.body;
+    const result = uploadManager.initUpload(name, size);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/uploads/:id/finish', (req, res) => {
+  try {
+    const result = uploadManager.finishUpload(req.params.id);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.delete('/api/uploads/:id', (req, res) => {
+  const result = uploadManager.deleteUpload(req.params.id);
+  res.json(result);
+});
+
+// CTA Endpoints
+app.post('/api/cta', (req, res) => {
+  const { uploadId } = req.body;
+  state.cta = {
+    id: uploadId || 'cta_default',
+    name: 'sample_video.mp4',
+    durationSec: 15.0
+  };
+  res.json({ ok: true, cta: state.cta });
+});
+
+app.delete('/api/cta', (req, res) => {
+  state.cta = null;
+  res.json({ ok: true });
+});
+
 function startServer(port = 3000) {
   return new Promise((resolve, reject) => {
     const server = app.listen(port, () => {
