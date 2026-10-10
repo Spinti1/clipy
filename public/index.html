@@ -238,8 +238,13 @@ function toast(msg) {
     toastTimer = setTimeout(() => t.classList.remove('show'), 3600);
 }
 
-const CLOUD_BACKEND = 'https://restoration-remember-noted-cancellation.trycloudflare.com';
-let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? CLOUD_BACKEND : '');
+// Purge obsolete localtunnel URLs from localStorage if present
+const storedBackend = localStorage.getItem('clipy_backend_url') || '';
+if (storedBackend.includes('loca.lt')) {
+    localStorage.removeItem('clipy_backend_url');
+}
+
+let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || '';
 if (API_BASE) API_BASE = API_BASE.replace(/\/+$/, '');
 
 function resolveUrl(path) {
@@ -266,18 +271,36 @@ setInterval(async () => {
 async function api(path, opts = {}) {
     const init = {
         method: opts.method || 'GET',
-        headers: {
-            'Bypass-Tunnel-Reminder': '1'
-        }
+        headers: {}
     };
     if (opts.body) {
         init.headers['Content-Type'] = 'application/json';
         init.body = JSON.stringify(opts.body);
     }
-    const targetUrl = resolveUrl(path);
-    const r = await fetch(targetUrl, init).catch(err => {
-        throw new Error('Eroare conexiune: ' + (err.message || 'Server inaccesibil'));
-    });
+    let targetUrl = resolveUrl(path);
+    if (targetUrl.includes('loca.lt')) {
+        init.headers['Bypass-Tunnel-Reminder'] = '1';
+    }
+    let r;
+    try {
+        r = await fetch(targetUrl, init);
+    } catch (err) {
+        // If an external API_BASE failed (e.g. adblocker, expired tunnel or old localStorage), auto-fallback to same-origin!
+        if (API_BASE && targetUrl !== path) {
+            console.warn('[Clipy] Fallback la same-origin pentru:', path);
+            try {
+                r = await fetch(path, init);
+                // Relative worked! Clear the broken external URL from localStorage so subsequent calls are smooth
+                localStorage.removeItem('clipy_backend_url');
+                API_BASE = '';
+                window.API_BASE = '';
+            } catch (fallbackErr) {
+                throw new Error('Eroare conexiune: ' + (fallbackErr.message || err.message || 'Server inaccesibil'));
+            }
+        } else {
+            throw new Error('Eroare conexiune: ' + (err.message || 'Server inaccesibil'));
+        }
+    }
     if (r.status === 404 && path.startsWith('/api/jobs')) {
         if (typeof window.openBackendModal === 'function') {
             window.openBackendModal();
@@ -741,8 +764,8 @@ const DEFAULT_CONFIG = {
     }
     if ($('#connectTunnelBtn')) {
         $('#connectTunnelBtn').onclick = () => {
-            localStorage.setItem('clipy_backend_url', 'https://clipy-api-demo.loca.lt');
-            toast('Tunel conectat! Reîncărcare... ⚡');
+            localStorage.removeItem('clipy_backend_url');
+            toast('Conexiune Vercel activată! Reîncărcare... ⚡');
             setTimeout(() => location.reload(), 400);
         };
     }
