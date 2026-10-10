@@ -259,6 +259,30 @@ app.get('/api/voice-preview/:key', (req, res) => {
   }
 });
 
+const ultraScheduler = require('./src/ultraScheduler.js');
+
+app.get('/api/ultra/state', (req, res) => {
+  res.json(ultraScheduler.getState());
+});
+
+app.put('/api/ultra/program', (req, res) => {
+  try {
+    const updated = ultraScheduler.updateProgram(req.body);
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.delete('/api/ultra/queue/:id', (req, res) => {
+  const result = ultraScheduler.cancelQueued(req.params.id);
+  res.json(result);
+});
+
+app.post('/api/ultra/tiktok-info', (req, res) => {
+  res.json(ultraScheduler.getTikTokInfo());
+});
+
 function startServer(port = 3000) {
   return new Promise((resolve, reject) => {
     const server = app.listen(port, () => {
