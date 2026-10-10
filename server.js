@@ -174,6 +174,78 @@ app.delete('/api/cta', (req, res) => {
   res.json({ ok: true });
 });
 
+const jobPipeline = require('./src/jobPipeline.js');
+
+app.get('/api/jobs', (req, res) => {
+  res.json({ jobs: Array.from(jobPipeline.jobsStore.values()).reverse() });
+});
+
+app.post('/api/jobs', (req, res) => {
+  try {
+    const job = jobPipeline.createJob(req.body);
+    res.json({ ok: true, job });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/jobs/batch', (req, res) => {
+  try {
+    const { urls, voice, speed, lang, fit } = req.body;
+    const urlList = Array.isArray(urls) ? urls : [urls].filter(Boolean);
+    const results = urlList.map(url => {
+      try {
+        const job = jobPipeline.createJob({ url, voice, speed, lang, fit });
+        return { ok: true, url, job };
+      } catch (err) {
+        return { ok: false, url, error: err.message };
+      }
+    });
+    res.json({ ok: true, results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.delete('/api/jobs/:id', (req, res) => {
+  jobPipeline.jobsStore.delete(req.params.id);
+  res.json({ ok: true });
+});
+
+app.post('/api/jobs/clear', (req, res) => {
+  for (const [id, j] of jobPipeline.jobsStore.entries()) {
+    if (j.done) jobPipeline.jobsStore.delete(id);
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/jobs/:id/captions', (req, res) => {
+  try {
+    const data = jobPipeline.getCaptions(req.params.id);
+    res.json(data);
+  } catch (err) {
+    res.status(err.status || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/jobs/:id/export', (req, res) => {
+  try {
+    const data = jobPipeline.exportJob(req.params.id, req.body.tools);
+    res.json(data);
+  } catch (err) {
+    res.status(err.status || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/jobs/:id/post-text', (req, res) => {
+  try {
+    const data = jobPipeline.getPostText(req.params.id);
+    res.json(data);
+  } catch (err) {
+    res.status(err.status || 500).json({ ok: false, error: err.message });
+  }
+});
+
 function startServer(port = 3000) {
   return new Promise((resolve, reject) => {
     const server = app.listen(port, () => {
