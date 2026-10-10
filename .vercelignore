@@ -1,0 +1,9 @@
+node_modules
+data
+tests
+docs
+.git
+.superpowers
+*.mp4
+*.mp3
+*.wav
