@@ -422,6 +422,103 @@ function formatSrtTime(sec) {
   return `${hrs}:${mins}:${secs},${ms}`;
 }
 
+function hexToAssColor(hex, fallback = '&H00FFFFFF&') {
+  if (!hex) return fallback;
+  const c = String(hex).replace('#', '').trim();
+  if (c.length === 6) {
+    const r = c.slice(0, 2);
+    const g = c.slice(2, 4);
+    const b = c.slice(4, 6);
+    return `&H00${b}${g}${r}&`;
+  }
+  return fallback;
+}
+
+function formatAssTime(sec) {
+  const s = Math.max(0, sec || 0);
+  const hrs = Math.floor(s / 3600);
+  const mins = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+  const secs = String(Math.floor(s % 60)).padStart(2, '0');
+  const cs = String(Math.floor((s % 1) * 100)).padStart(2, '0');
+  return `${hrs}:${mins}:${secs}.${cs}`;
+}
+
+const PRESET_STYLES = {
+  clasic:   { font: 'Anton', active: '#65D69E', text: '#FFFFFF', upper: true, outline: 3.5, shadow: 1.5 },
+  galben:   { font: 'Anton', active: '#FFD400', text: '#FFFFFF', upper: true, outline: 3.5, shadow: 1.5 },
+  comic:    { font: 'Bangers', active: '#FF3B5C', text: '#FFFFFF', upper: true, outline: 3.5, shadow: 2.0 },
+  bubble:   { font: 'Luckiest Guy', active: '#38BDF8', text: '#FFFFFF', upper: false, outline: 4.0, shadow: 2.0 },
+  neon:     { font: 'Bangers', active: '#FFF36B', text: '#FFFFFF', upper: true, outline: 3.0, shadow: 2.5 },
+  boxnegru: { font: 'Anton', active: '#FFD400', text: '#FFFFFF', upper: true, outline: 3.0, shadow: 1.5 },
+  boxverde: { font: 'Anton', active: '#FFFFFF', text: '#07130D', upper: true, outline: 2.5, shadow: 1.0 },
+  simplu:   { font: 'Anton', active: '#FFFFFF', text: '#FFFFFF', upper: false, outline: 2.0, shadow: 1.0 }
+};
+
+/**
+ * Generates an ASS subtitle script with real-time active-word karaoke highlighting
+ */
+function generateAssScript({ groups, width, height, capTools }) {
+  const cap = capTools || {};
+  const presetKey = cap.preset || 'clasic';
+  const preset = PRESET_STYLES[presetKey] || PRESET_STYLES.clasic;
+
+  const fontName = preset.font || 'Anton';
+  const isUpper = preset.upper !== false;
+  const activeColor = hexToAssColor(preset.active, '&H009ED665&');
+  const normalColor = hexToAssColor(preset.text, '&H00FFFFFF&');
+  const outlineColor = '&H00000000&';
+  const shadowColor = '&H80000000&';
+
+  const sizeKey = cap.size || 'm';
+  const sizeFactor = sizeKey === 's' ? 0.058 : (sizeKey === 'l' ? 0.088 : 0.072);
+  const fontSize = Math.max(28, Math.round(width * sizeFactor));
+
+  const posY = Number(cap.posY != null ? cap.posY : 0.72);
+  const marginV = Math.max(30, Math.round((1 - posY) * height));
+
+  let ass = `[Script Info]
+ScriptType: v4.00+
+PlayResX: ${width}
+PlayResY: ${height}
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,${fontName},${fontSize},${normalColor},${activeColor},${outlineColor},${shadowColor},-1,0,0,0,100,100,1,0,1,${preset.outline},${preset.shadow},2,30,30,${marginV},1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+`;
+
+  if (Array.isArray(groups)) {
+    groups.forEach((g) => {
+      const words = g.words || [];
+      if (!words.length) return;
+
+      for (let i = 0; i < words.length; i++) {
+        const w = words[i];
+        const nextW = words[i + 1];
+        const wordStart = Math.max(g.s, w.s);
+        const wordEnd = nextW ? Math.max(wordStart + 0.05, Math.min(g.e, nextW.s)) : g.e;
+
+        if (wordEnd <= wordStart) continue;
+
+        const lineText = words.map((cur, curIdx) => {
+          const txt = isUpper ? String(cur.w).toUpperCase() : cur.w;
+          if (curIdx === i) {
+            return `{\\c${activeColor}}${txt}{\\c${normalColor}}`;
+          }
+          return txt;
+        }).join(' ');
+
+        ass += `Dialogue: 0,${formatAssTime(wordStart)},${formatAssTime(wordEnd)},Default,,0,0,${marginV},,${lineText}\n`;
+      }
+    });
+  }
+
+  return ass;
+}
+
 /**
  * Renders an exported MP4 with tools (mirror, mask, blur, subtitles) burned in using ffmpeg
  */
@@ -440,61 +537,89 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
   const width = probe.width || 720;
   const height = probe.height || 1280;
 
-  const vfilters = [];
+  let assPath = null;
+  const filterChains = [];
+  let currentLabel = '0:v';
+  let step = 0;
 
-  // 1. Mirror
+  // 1. Horizontal Mirror
   if (tools.mirror) {
-    vfilters.push('hflip');
+    const nextLabel = `v_${++step}`;
+    filterChains.push(`[${currentLabel}]hflip[${nextLabel}]`);
+    currentLabel = nextLabel;
   }
 
-  // 2. Mask band
-  if (tools.mask && tools.mask.enabled) {
-    if (tools.mask.blackBg) {
-      const topH = Math.max(1, Math.round(Math.max(0, (tools.mask.posY - tools.mask.thickness / 2) * height)));
-      const botY = Math.min(height - 1, Math.round(Math.min(height, (tools.mask.posY + tools.mask.thickness / 2) * height)));
-      vfilters.push(`drawbox=x=0:y=0:w=${width}:h=${topH}:color=black:t=fill`);
-      vfilters.push(`drawbox=x=0:y=${botY}:w=${width}:h=${height - botY}:color=black:t=fill`);
-    }
-  }
-
-  // 3. Blur bounding boxes
+  // 2. Blur bounding boxes (applied on video BEFORE subtitles so subtitles are OVER blur)
   if (Array.isArray(tools.blur) && tools.blur.length > 0) {
     for (const b of tools.blur) {
-      const bx = Math.max(0, Math.min(width - 4, Math.round((b.x / 100) * width)));
-      const by = Math.max(0, Math.min(height - 4, Math.round((b.y / 100) * height)));
-      const bw = Math.max(4, Math.min(width - bx, Math.round((b.w / 100) * width)));
-      const bh = Math.max(4, Math.min(height - by, Math.round((b.h / 100) * height)));
-      vfilters.push(`delogo=x=${bx}:y=${by}:w=${bw}:h=${bh}`);
+      let bx = Math.max(0, Math.min(width - 4, Math.round((b.x / 100) * width)));
+      let by = Math.max(0, Math.min(height - 4, Math.round((b.y / 100) * height)));
+      let bw = Math.max(4, Math.min(width - bx, Math.round((b.w / 100) * width)));
+      let bh = Math.max(4, Math.min(height - by, Math.round((b.h / 100) * height)));
+
+      // Make dimensions even
+      bw = bw - (bw % 2);
+      bh = bh - (bh % 2);
+      bx = bx - (bx % 2);
+      by = by - (by % 2);
+
+      const splitBase = `sp_base_${++step}`;
+      const splitCrop = `sp_crop_${step}`;
+      const blurred = `blur_${step}`;
+      const nextLabel = `v_${++step}`;
+
+      filterChains.push(`[${currentLabel}]split[${splitBase}][${splitCrop}]`);
+      filterChains.push(`[${splitCrop}]crop=${bw}:${bh}:${bx}:${by},boxblur=15:5[${blurred}]`);
+      filterChains.push(`[${splitBase}][${blurred}]overlay=${bx}:${by}[${nextLabel}]`);
+      currentLabel = nextLabel;
     }
   }
 
-  // 4. Burn subtitles if enabled
-  let srtPath = null;
+  // 3. Mask band
+  if (tools.mask && tools.mask.enabled && tools.mask.blackBg) {
+    const topH = Math.max(1, Math.round(Math.max(0, (tools.mask.posY - tools.mask.thickness / 2) * height)));
+    const botY = Math.min(height - 1, Math.round(Math.min(height, (tools.mask.posY + tools.mask.thickness / 2) * height)));
+    const nextLabel1 = `v_${++step}`;
+    const nextLabel2 = `v_${++step}`;
+    filterChains.push(`[${currentLabel}]drawbox=x=0:y=0:w=${width}:h=${topH}:color=black:t=fill[${nextLabel1}]`);
+    filterChains.push(`[${nextLabel1}]drawbox=x=0:y=${botY}:w=${width}:h=${height - botY}:color=black:t=fill[${nextLabel2}]`);
+    currentLabel = nextLabel2;
+  }
+
+  // 4. Burn subtitles ON TOP of all blur and video filters
   if (tools.captions && tools.captions.enabled && captionsWords && captionsWords.length > 0) {
     const captionService = require('./captionService');
     const groups = captionService.wordsToGroups(captionsWords, tools.captions.per || 4);
     if (groups && groups.length > 0) {
-      srtPath = path.join(filesDir, `sub_${Date.now()}_${crypto.randomBytes(3).toString('hex')}.srt`);
-      let srtContent = '';
-      groups.forEach((g, idx) => {
-        const lineText = g.words.map(w => w.w).join(' ');
-        srtContent += `${idx + 1}\n${formatSrtTime(g.s)} --> ${formatSrtTime(g.e)}\n${lineText}\n\n`;
+      assPath = path.join(filesDir, `sub_${Date.now()}_${crypto.randomBytes(3).toString('hex')}.ass`);
+      const assScript = generateAssScript({
+        groups,
+        width,
+        height,
+        capTools: tools.captions
       });
-      fs.writeFileSync(srtPath, srtContent, 'utf8');
+      fs.writeFileSync(assPath, assScript, 'utf8');
 
-      const escapedSrt = srtPath.replace(/\\/g, '/').replace(/:/g, '\\:');
-      const fontSize = tools.captions.size === 's' ? 18 : (tools.captions.size === 'l' ? 28 : 22);
-      vfilters.push(`subtitles='${escapedSrt}':force_style='FontSize=${fontSize},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2'`);
+      // Use relative paths to prevent Windows colon parsing issues in ffmpeg
+      const relAss = path.relative(process.cwd(), assPath).replace(/\\/g, '/');
+      const relFonts = path.relative(process.cwd(), path.join(__dirname, '..', 'public', 'fonts')).replace(/\\/g, '/');
+
+      const nextLabel = `v_${++step}`;
+      filterChains.push(`[${currentLabel}]subtitles='${relAss}':fontsdir='${relFonts}'[${nextLabel}]`);
+      currentLabel = nextLabel;
     }
   }
 
   return new Promise((resolve) => {
     let args;
-    if (vfilters.length > 0) {
+    if (filterChains.length > 0) {
+      const filterComplex = filterChains.join(';');
       args = [
         '-y',
         '-i', resolvedVideo,
-        '-vf', vfilters.join(','),
+        '-filter_complex', filterComplex,
+        '-map', `[${currentLabel}]`,
+        '-map', '0:a?',
         '-c:v', 'libx264',
         '-preset', 'veryfast',
         '-crf', '22',
@@ -517,14 +642,14 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
 
     const timer = setTimeout(() => {
       try { proc.kill(); } catch (_) {}
-    }, 60000);
+    }, 90000);
 
     proc.stderr.on('data', d => { stderr += d; });
 
     proc.on('close', (code) => {
       clearTimeout(timer);
-      if (srtPath && fs.existsSync(srtPath)) {
-        try { fs.unlinkSync(srtPath); } catch (_) {}
+      if (assPath && fs.existsSync(assPath)) {
+        try { fs.unlinkSync(assPath); } catch (_) {}
       }
       if (code === 0 && fs.existsSync(dest) && fs.statSync(dest).size > 1000) {
         resolve({
@@ -533,7 +658,7 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
           videoUrl: '/files/' + path.basename(dest)
         });
       } else {
-        console.warn(`[videoDownloader] exportProcessedVideo error (code ${code}):`, stderr.slice(0, 300));
+        console.warn(`[videoDownloader] exportProcessedVideo error (code ${code}):`, stderr.slice(-300));
         resolve({
           ok: true,
           filePath: resolvedVideo,
@@ -544,8 +669,8 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
 
     proc.on('error', (err) => {
       clearTimeout(timer);
-      if (srtPath && fs.existsSync(srtPath)) {
-        try { fs.unlinkSync(srtPath); } catch (_) {}
+      if (assPath && fs.existsSync(assPath)) {
+        try { fs.unlinkSync(assPath); } catch (_) {}
       }
       console.warn(`[videoDownloader] exportProcessedVideo spawn error:`, err.message);
       resolve({

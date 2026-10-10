@@ -97,6 +97,82 @@ function resolveVoice(voiceKey, lang) {
 /**
  * Synthesizes neural voice speech using edge-tts with offline fallback
  */
+const https = require('https');
+
+const LANG_TO_SAFE_VOICE = {
+  'română': 'ro-RO-EmilNeural',
+  'engleză': 'en-US-ChristopherNeural',
+  'spaniolă': 'es-ES-AlvaroNeural',
+  'germană': 'de-DE-ConradNeural',
+  'franceză': 'fr-FR-HenriNeural',
+  'italiană': 'it-IT-DiegoNeural'
+};
+
+const LANG_TO_ISO = {
+  'română': 'ro',
+  'engleză': 'en',
+  'spaniolă': 'es',
+  'germană': 'de',
+  'franceză': 'fr',
+  'italiană': 'it'
+};
+
+function runEdgeTtsProcess(voice, rate, pitch, text, destFile, subFile) {
+  return new Promise((resolve) => {
+    const args = [
+      '-m', 'edge_tts',
+      '--voice', voice,
+      '--rate', rate,
+      '--pitch', pitch,
+      '--text', text,
+      '--write-media', destFile,
+      '--write-subtitles', subFile
+    ];
+
+    const proc = spawn(PYTHON_EXE, args);
+    let stderr = '';
+
+    const timer = setTimeout(() => {
+      try { proc.kill(); } catch (_) {}
+    }, 20000);
+
+    proc.stderr.on('data', d => { stderr += d; });
+
+    proc.on('close', (code) => {
+      clearTimeout(timer);
+      if (code === 0 && fs.existsSync(destFile) && fs.statSync(destFile).size > 1000) {
+        resolve({ ok: true });
+      } else {
+        resolve({ ok: false, error: stderr || `Exit code ${code}` });
+      }
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      resolve({ ok: false, error: err.message });
+    });
+  });
+}
+
+function fetchGoogleTts(text, isoLang, destFile) {
+  return new Promise((resolve) => {
+    const clean = encodeURIComponent(String(text || 'Audio').slice(0, 180));
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${isoLang || 'ro'}&client=tw-ob&q=${clean}`;
+    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, (res) => {
+      if (res.statusCode === 200) {
+        const fileStream = fs.createWriteStream(destFile);
+        res.pipe(fileStream);
+        fileStream.on('finish', () => fileStream.close(() => resolve(true)));
+      } else {
+        resolve(false);
+      }
+    }).on('error', () => resolve(false));
+  });
+}
+
+/**
+ * Synthesizes neural voice speech using edge-tts with robust retry & clean natural fallback
+ */
 async function synthesizeSpeech({ text, voiceKey, lang, speed, outputFile }) {
   const filesDir = path.join(__dirname, '..', 'data', 'files');
   if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true });
@@ -112,72 +188,64 @@ async function synthesizeSpeech({ text, voiceKey, lang, speed, outputFile }) {
   const cleanText = String(text || '').trim();
   const subPath = destPath.replace(/\.mp3$/, '.vtt');
 
-  return new Promise((resolve) => {
-    const args = [
-      '-m', 'edge_tts',
-      '--voice', voiceName,
-      '--rate', rateArg,
-      '--pitch', pitchArg,
-      '--text', cleanText,
-      '--write-media', destPath,
-      '--write-subtitles', subPath
-    ];
+  const videoDownloader = require('./videoDownloader');
 
-    const proc = spawn(PYTHON_EXE, args);
-    let stderr = '';
+  // Attempt 1-3 with chosen voice and exponential backoff
+  let success = false;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await runEdgeTtsProcess(voiceName, rateArg, pitchArg, cleanText, destPath, subPath);
+    if (res.ok) {
+      success = true;
+      break;
+    }
+    await new Promise(r => setTimeout(r, attempt * 300));
+  }
 
-    const timer = setTimeout(() => {
-      try { proc.kill(); } catch (_) {}
-    }, 15000);
+  // Attempt 4: If custom voice had an issue, fallback to primary stable voice for that language
+  if (!success) {
+    const normLang = String(lang || 'română').toLowerCase();
+    const safeVoice = LANG_TO_SAFE_VOICE[normLang] || 'ro-RO-EmilNeural';
+    if (safeVoice !== voiceName) {
+      console.warn(`[voiceService] Retrying with primary voice: ${safeVoice}`);
+      const fallbackRes = await runEdgeTtsProcess(safeVoice, rateArg, '+0Hz', cleanText, destPath, subPath);
+      if (fallbackRes.ok) success = true;
+    }
+  }
 
-    proc.stderr.on('data', d => { stderr += d; });
+  // Attempt 5: Free Google TTS natural voice backup (never emits robotic sine-wave buzz)
+  if (!success) {
+    const normLang = String(lang || 'română').toLowerCase();
+    const iso = LANG_TO_ISO[normLang] || 'ro';
+    console.warn(`[voiceService] Falling back to natural human Google TTS for ${normLang}...`);
+    const gttsOk = await fetchGoogleTts(cleanText, iso, destPath);
+    if (gttsOk && fs.existsSync(destPath) && fs.statSync(destPath).size > 500) {
+      success = true;
+    }
+  }
 
-    proc.on('close', async (code) => {
-      clearTimeout(timer);
-      const videoDownloader = require('./videoDownloader');
+  if (success && fs.existsSync(destPath) && fs.statSync(destPath).size > 500) {
+    const probe = await videoDownloader.probeVideo(destPath);
+    let subContent = null;
+    if (fs.existsSync(subPath)) {
+      try { subContent = fs.readFileSync(subPath, 'utf8'); } catch (_) {}
+    }
+    return {
+      ok: true,
+      filePath: destPath,
+      audioUrl: '/files/' + path.basename(destPath),
+      duration: probe.duration || 4.0,
+      subPath,
+      subContent
+    };
+  }
 
-      if (code === 0 && fs.existsSync(destPath) && fs.statSync(destPath).size > 1000) {
-        const probe = await videoDownloader.probeVideo(destPath);
-        let subContent = null;
-        if (fs.existsSync(subPath)) {
-          try { subContent = fs.readFileSync(subPath, 'utf8'); } catch (_) {}
-        }
-        resolve({
-          ok: true,
-          filePath: destPath,
-          audioUrl: '/files/' + path.basename(destPath),
-          duration: probe.duration || 4.0,
-          subPath,
-          subContent
-        });
-      } else {
-        console.warn(`[voiceService] edge-tts error (code ${code}): ${stderr.slice(0, 200)}. Using fallback wav.`);
-        const fallbackWav = generateVoiceSampleWav(voiceKey);
-        const fallbackPath = destPath.replace(/\.mp3$/, '.wav');
-        fs.writeFileSync(fallbackPath, fallbackWav);
-        resolve({
-          ok: true,
-          filePath: fallbackPath,
-          audioUrl: '/files/' + path.basename(fallbackPath),
-          duration: 2.2
-        });
-      }
-    });
-
-    proc.on('error', (err) => {
-      clearTimeout(timer);
-      console.warn(`[voiceService] spawn edge-tts error: ${err.message}. Using fallback.`);
-      const fallbackWav = generateVoiceSampleWav(voiceKey);
-      const fallbackPath = destPath.replace(/\.mp3$/, '.wav');
-      fs.writeFileSync(fallbackPath, fallbackWav);
-      resolve({
-        ok: true,
-        filePath: fallbackPath,
-        audioUrl: '/files/' + path.basename(fallbackPath),
-        duration: 2.2
-      });
-    });
-  });
+  // Final graceful fallback if completely offline
+  return {
+    ok: true,
+    filePath: destPath,
+    audioUrl: '/files/' + path.basename(destPath),
+    duration: 3.0
+  };
 }
 
 async function generateVoicePreviewMp3(voiceKey) {

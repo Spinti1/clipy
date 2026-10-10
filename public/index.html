@@ -569,10 +569,62 @@ document.onkeydown = e => {
     }
 };
 
+const DEFAULT_CONFIG = {
+    cost: 0,
+    free: true,
+    defaultSpeed: 1.35,
+    defaultVoice: "ro_emil",
+    langs: [
+        { key: "română", label: "Română", flag: "🇷🇴" },
+        { key: "engleză", label: "Engleză", flag: "🇬🇧" },
+        { key: "spaniolă", label: "Spaniolă", flag: "🇪🇸" },
+        { key: "germană", label: "Germană", flag: "🇩🇪" },
+        { key: "franceză", label: "Franceză", flag: "🇫🇷" },
+        { key: "italiană", label: "Italiană", flag: "🇮🇹" }
+    ],
+    voices: [
+        { key: "ro_emil", label: "Emil", tag: "M · clar, narativ", lang: "română" },
+        { key: "ro_alina", label: "Alina", tag: "F · caldă, naturală", lang: "română" },
+        { key: "ro_radu", label: "Radu", tag: "M · tânăr, energic", lang: "română" },
+        { key: "ro_delia", label: "Delia", tag: "F · radio, podcast", lang: "română" },
+        { key: "en_christopher", label: "Christopher", tag: "M · autoritar, povestitor", lang: "engleză" },
+        { key: "en_jenny", label: "Jenny", tag: "F · naturală, conversațională", lang: "engleză" },
+        { key: "en_guy", label: "Guy", tag: "M · pasionat, dinamic", lang: "engleză" },
+        { key: "en_aria", label: "Aria", tag: "F · luminoasă, energică", lang: "engleză" },
+        { key: "es_alvaro", label: "Alvaro", tag: "M · nativ, profesional", lang: "spaniolă" },
+        { key: "es_elvira", label: "Elvira", tag: "F · caldă, clară", lang: "spaniolă" },
+        { key: "es_jorge", label: "Jorge", tag: "M · profund, podcast", lang: "spaniolă" },
+        { key: "es_ximena", label: "Ximena", tag: "F · dinamică, social", lang: "spaniolă" },
+        { key: "de_conrad", label: "Conrad", tag: "M · profesional, ferm", lang: "germană" },
+        { key: "de_katja", label: "Katja", tag: "F · clară, optimistă", lang: "germană" },
+        { key: "de_florian", label: "Florian", tag: "M · modern, narativ", lang: "germană" },
+        { key: "de_amala", label: "Amala", tag: "F · blândă, radio", lang: "germană" },
+        { key: "fr_henri", label: "Henri", tag: "M · dinamic, elegant", lang: "franceză" },
+        { key: "fr_denise", label: "Denise", tag: "F · naturală, caldă", lang: "franceză" },
+        { key: "fr_remy", label: "Remy", tag: "M · tânăr, energic", lang: "franceză" },
+        { key: "fr_eloise", label: "Eloise", tag: "F · expresivă, vibrantă", lang: "franceză" },
+        { key: "it_diego", label: "Diego", tag: "M · sigur, natural", lang: "italiană" },
+        { key: "it_elsa", label: "Elsa", tag: "F · expresivă, plăcută", lang: "italiană" },
+        { key: "it_giuseppe", label: "Giuseppe", tag: "M · profund, documentar", lang: "italiană" },
+        { key: "it_isabella", label: "Isabella", tag: "F · vioaie, social", lang: "italiană" }
+    ],
+    captionPresets: [
+        { key: "clasic", label: "Clasic" },
+        { key: "galben", label: "Galben" },
+        { key: "comic", label: "Comic" },
+        { key: "bubble", label: "Bubble" }
+    ]
+};
+
 (async function init() {
     SetupPanel.init();
     SetupPanel.addRow(null, '');
-    CFG = await api('/api/config');
+    try {
+        CFG = await api('/api/config');
+    } catch (_) {
+        CFG = DEFAULT_CONFIG;
+    }
+    if (!CFG || !CFG.langs) CFG = DEFAULT_CONFIG;
     $('#lang').innerHTML = CFG.langs.map(l => `<option value="${l.key}">${l.flag} ${l.label}</option>`).join('');
     $('#lang').value = state.lang;
     SetupPanel.renderVoices();

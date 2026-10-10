@@ -1,0 +1,325 @@
+{
+  "cost": 0,
+  "free": true,
+  "voiceCharsPerCredit": 1000,
+  "maxSec": 600,
+  "maxUploadMb": 1024,
+  "defaultSpeed": 1.35,
+  "speedMin": 0.8,
+  "speedMax": 1.5,
+  "defaultVoice": "ro_emil",
+  "voices": [
+    {
+      "key": "ro_emil",
+      "label": "Emil",
+      "tag": "M · clar, narativ",
+      "lang": "română",
+      "sample": "/api/voice-preview/ro_emil"
+    },
+    {
+      "key": "ro_alina",
+      "label": "Alina",
+      "tag": "F · caldă, naturală",
+      "lang": "română",
+      "sample": "/api/voice-preview/ro_alina"
+    },
+    {
+      "key": "ro_radu",
+      "label": "Radu",
+      "tag": "M · tânăr, energic",
+      "lang": "română",
+      "sample": "/api/voice-preview/ro_radu"
+    },
+    {
+      "key": "ro_delia",
+      "label": "Delia",
+      "tag": "F · radio, podcast",
+      "lang": "română",
+      "sample": "/api/voice-preview/ro_delia"
+    },
+    {
+      "key": "en_christopher",
+      "label": "Christopher",
+      "tag": "M · autoritar, povestitor",
+      "lang": "engleză",
+      "sample": "/api/voice-preview/en_christopher"
+    },
+    {
+      "key": "en_jenny",
+      "label": "Jenny",
+      "tag": "F · naturală, conversațională",
+      "lang": "engleză",
+      "sample": "/api/voice-preview/en_jenny"
+    },
+    {
+      "key": "en_guy",
+      "label": "Guy",
+      "tag": "M · pasionat, dinamic",
+      "lang": "engleză",
+      "sample": "/api/voice-preview/en_guy"
+    },
+    {
+      "key": "en_aria",
+      "label": "Aria",
+      "tag": "F · luminoasă, energică",
+      "lang": "engleză",
+      "sample": "/api/voice-preview/en_aria"
+    },
+    {
+      "key": "es_alvaro",
+      "label": "Alvaro",
+      "tag": "M · nativ, profesional",
+      "lang": "spaniolă",
+      "sample": "/api/voice-preview/es_alvaro"
+    },
+    {
+      "key": "es_elvira",
+      "label": "Elvira",
+      "tag": "F · caldă, clară",
+      "lang": "spaniolă",
+      "sample": "/api/voice-preview/es_elvira"
+    },
+    {
+      "key": "es_jorge",
+      "label": "Jorge",
+      "tag": "M · profund, podcast",
+      "lang": "spaniolă",
+      "sample": "/api/voice-preview/es_jorge"
+    },
+    {
+      "key": "es_ximena",
+      "label": "Ximena",
+      "tag": "F · dinamică, social",
+      "lang": "spaniolă",
+      "sample": "/api/voice-preview/es_ximena"
+    },
+    {
+      "key": "de_conrad",
+      "label": "Conrad",
+      "tag": "M · profesional, ferm",
+      "lang": "germană",
+      "sample": "/api/voice-preview/de_conrad"
+    },
+    {
+      "key": "de_katja",
+      "label": "Katja",
+      "tag": "F · clară, optimistă",
+      "lang": "germană",
+      "sample": "/api/voice-preview/de_katja"
+    },
+    {
+      "key": "de_florian",
+      "label": "Florian",
+      "tag": "M · modern, narativ",
+      "lang": "germană",
+      "sample": "/api/voice-preview/de_florian"
+    },
+    {
+      "key": "de_amala",
+      "label": "Amala",
+      "tag": "F · blândă, radio",
+      "lang": "germană",
+      "sample": "/api/voice-preview/de_amala"
+    },
+    {
+      "key": "fr_henri",
+      "label": "Henri",
+      "tag": "M · dinamic, elegant",
+      "lang": "franceză",
+      "sample": "/api/voice-preview/fr_henri"
+    },
+    {
+      "key": "fr_denise",
+      "label": "Denise",
+      "tag": "F · naturală, caldă",
+      "lang": "franceză",
+      "sample": "/api/voice-preview/fr_denise"
+    },
+    {
+      "key": "fr_remy",
+      "label": "Remy",
+      "tag": "M · tânăr, energic",
+      "lang": "franceză",
+      "sample": "/api/voice-preview/fr_remy"
+    },
+    {
+      "key": "fr_eloise",
+      "label": "Eloise",
+      "tag": "F · expresivă, vibrantă",
+      "lang": "franceză",
+      "sample": "/api/voice-preview/fr_eloise"
+    },
+    {
+      "key": "it_diego",
+      "label": "Diego",
+      "tag": "M · sigur, natural",
+      "lang": "italiană",
+      "sample": "/api/voice-preview/it_diego"
+    },
+    {
+      "key": "it_elsa",
+      "label": "Elsa",
+      "tag": "F · expresivă, plăcută",
+      "lang": "italiană",
+      "sample": "/api/voice-preview/it_elsa"
+    },
+    {
+      "key": "it_giuseppe",
+      "label": "Giuseppe",
+      "tag": "M · profund, documentar",
+      "lang": "italiană",
+      "sample": "/api/voice-preview/it_giuseppe"
+    },
+    {
+      "key": "it_isabella",
+      "label": "Isabella",
+      "tag": "F · vioaie, social",
+      "lang": "italiană",
+      "sample": "/api/voice-preview/it_isabella"
+    }
+  ],
+  "langs": [
+    {
+      "key": "română",
+      "label": "Română",
+      "flag": "🇷🇴",
+      "short": "RO",
+      "iso": "ro"
+    },
+    {
+      "key": "engleză",
+      "label": "Engleză",
+      "flag": "🇬🇧",
+      "short": "EN",
+      "iso": "en"
+    },
+    {
+      "key": "spaniolă",
+      "label": "Spaniolă",
+      "flag": "🇪🇸",
+      "short": "ES",
+      "iso": "es"
+    },
+    {
+      "key": "germană",
+      "label": "Germană",
+      "flag": "🇩🇪",
+      "short": "DE",
+      "iso": "de"
+    },
+    {
+      "key": "franceză",
+      "label": "Franceză",
+      "flag": "🇫🇷",
+      "short": "FR",
+      "iso": "fr"
+    },
+    {
+      "key": "italiană",
+      "label": "Italiană",
+      "flag": "🇮🇹",
+      "short": "IT",
+      "iso": "it"
+    }
+  ],
+  "captionPresets": [
+    {
+      "key": "clasic",
+      "label": "Clasic",
+      "font": "Anton",
+      "text": "#FFFFFF",
+      "active": "#65D69E",
+      "outline": 0.09,
+      "shadow": 0.04,
+      "upper": true
+    },
+    {
+      "key": "galben",
+      "label": "Galben",
+      "font": "Anton",
+      "text": "#FFFFFF",
+      "active": "#FFD400",
+      "outline": 0.1,
+      "shadow": 0.04,
+      "upper": true
+    },
+    {
+      "key": "comic",
+      "label": "Comic",
+      "font": "Bangers",
+      "text": "#FFFFFF",
+      "active": "#FF3B5C",
+      "outline": 0.09,
+      "shadow": 0.05,
+      "upper": true,
+      "spacing": 0.03
+    },
+    {
+      "key": "bubble",
+      "label": "Bubble",
+      "font": "Luckiest Guy",
+      "text": "#FFFFFF",
+      "active": "#38BDF8",
+      "outline": 0.11,
+      "shadow": 0.05,
+      "upper": false
+    },
+    {
+      "key": "boxnegru",
+      "label": "Box negru",
+      "font": "Anton",
+      "text": "#FFFFFF",
+      "active": "#FFD400",
+      "box": "#000000",
+      "boxAlpha": 0.65,
+      "pad": 0.16,
+      "upper": true
+    },
+    {
+      "key": "boxverde",
+      "label": "Box verde",
+      "font": "Anton",
+      "text": "#07130D",
+      "active": "#FFFFFF",
+      "box": "#65D69E",
+      "boxAlpha": 1,
+      "pad": 0.16,
+      "upper": true
+    },
+    {
+      "key": "neon",
+      "label": "Neon",
+      "font": "Bangers",
+      "text": "#FFFFFF",
+      "active": "#FFF36B",
+      "glow": "#FF4FD8",
+      "outline": 0.05,
+      "blur": 0.07,
+      "upper": true,
+      "spacing": 0.03
+    },
+    {
+      "key": "simplu",
+      "label": "Simplu",
+      "font": "Anton",
+      "text": "#FFFFFF",
+      "active": "#FFFFFF",
+      "outline": 0.04,
+      "shadow": 0.05,
+      "upper": false
+    }
+  ],
+  "captionSizes": {
+    "s": 0.045,
+    "m": 0.058,
+    "l": 0.074
+  },
+  "captionDefaults": {
+    "enabled": false,
+    "preset": "clasic",
+    "posY": 0.72,
+    "size": "m",
+    "per": 4
+  },
+  "ctaMaxSec": 15
+}
