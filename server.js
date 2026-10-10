@@ -246,6 +246,19 @@ app.post('/api/jobs/:id/post-text', (req, res) => {
   }
 });
 
+const voiceService = require('./src/voiceService.js');
+
+app.get('/api/voice-preview/:key', (req, res) => {
+  try {
+    const wav = voiceService.generateVoiceSampleWav(req.params.key);
+    res.setHeader('Content-Type', 'audio/wav');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(wav);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 function startServer(port = 3000) {
   return new Promise((resolve, reject) => {
     const server = app.listen(port, () => {
