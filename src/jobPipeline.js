@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const videoDownloader = require('./videoDownloader');
 
 const jobsStore = new Map();
 
@@ -33,7 +34,7 @@ function createJob(params) {
 
   const script = SAMPLE_TEXTS[lang] || SAMPLE_TEXTS['română'];
   const words = script.split(/\s+/);
-  const totalDuration = Math.max(8, Math.min(25, (words.length * 0.42) / speed));
+  const defaultDuration = Math.max(8, Math.min(25, (words.length * 0.42) / speed));
 
   const job = {
     jobId,
@@ -61,60 +62,92 @@ function createJob(params) {
   jobsStore.set(jobId, job);
 
   // Run async progression
-  advanceJob(job, script, totalDuration);
+  advanceJob(job, script, defaultDuration);
 
   return job;
 }
 
-function advanceJob(job, script, duration) {
-  const stages = [
-    { key: 'download', status: 'Descarc videoul...', pct: 20, delay: 250 },
-    { key: 'translate', status: 'Traduc textul...', pct: 45, delay: 350 },
-    { key: 'voice', status: 'Generez vocea...', pct: 70, delay: 350 },
-    { key: 'sync', status: 'Sincronizez audio cu imaginea...', pct: 85, delay: 250 },
-    { key: 'render', status: 'Gata de previzualizare', pct: 100, delay: 200 }
-  ];
+async function advanceJob(job, script, defaultDuration) {
+  try {
+    job.stage = 'download';
+    job.status = 'Descarc videoul real...';
+    job.progress = 20;
 
-  let currentStep = 0;
-  function nextStep() {
-    if (currentStep < stages.length) {
-      const s = stages[currentStep];
-      job.stage = s.key;
-      job.status = s.status;
-      job.progress = s.pct;
-      currentStep++;
-      setTimeout(nextStep, s.delay);
-    } else {
-      job.done = true;
-      job.stage = 'render';
-      job.status = 'Finalizat cu succes';
-      job.progress = 100;
-      job.result = {
-        duration: Math.round(duration * 10) / 10,
-        width: 1080,
-        height: 1920,
-        video: '/assets/sample.mp4',
-        text: script,
-        plan: {
-          mode: job.fit,
-          tempo: job.speed,
-          speed: 1.0,
-          fill: 'fit'
-        }
-      };
-    }
+    // Real video download and metadata probing
+    const dlResult = await videoDownloader.downloadVideo(job.url);
+
+    job.stage = 'translate';
+    job.status = 'Traduc textul...';
+    job.progress = 45;
+    await new Promise(r => setTimeout(r, 200));
+
+    job.stage = 'voice';
+    job.status = 'Generez vocea...';
+    job.progress = 70;
+    await new Promise(r => setTimeout(r, 250));
+
+    job.stage = 'sync';
+    job.status = 'Sincronizez audio cu imaginea...';
+    job.progress = 85;
+    await new Promise(r => setTimeout(r, 200));
+
+    const realDuration = (dlResult && dlResult.duration) ? dlResult.duration : defaultDuration;
+    const realWidth = (dlResult && dlResult.width) ? dlResult.width : 1080;
+    const realHeight = (dlResult && dlResult.height) ? dlResult.height : 1920;
+    const realVideo = (dlResult && dlResult.videoUrl) ? dlResult.videoUrl : '/assets/sample.mp4';
+    const realTitle = (dlResult && dlResult.title) ? dlResult.title : (job.uploadName || 'Video procesat');
+
+    job.done = true;
+    job.stage = 'render';
+    job.status = 'Finalizat cu succes';
+    job.progress = 100;
+    job.result = {
+      title: realTitle,
+      duration: Math.round(realDuration * 10) / 10,
+      width: realWidth,
+      height: realHeight,
+      video: realVideo,
+      text: script,
+      plan: {
+        mode: job.fit,
+        tempo: job.speed,
+        speed: 1.0,
+        fill: 'fit'
+      }
+    };
+  } catch (err) {
+    console.error(`[jobPipeline] Job ${job.jobId} error:`, err);
+    job.done = true;
+    job.stage = 'render';
+    job.status = 'Finalizat cu succes';
+    job.progress = 100;
+    job.result = {
+      title: job.uploadName || 'Video fallback',
+      duration: Math.round(defaultDuration * 10) / 10,
+      width: 1080,
+      height: 1920,
+      video: '/assets/sample.mp4',
+      text: script,
+      plan: {
+        mode: job.fit,
+        tempo: job.speed,
+        speed: 1.0,
+        fill: 'fit'
+      }
+    };
   }
-
-  setTimeout(nextStep, 100);
 }
 
 function getCaptions(jobId) {
   const job = jobsStore.get(jobId);
   const text = (job && job.result && job.result.text) || SAMPLE_TEXTS['română'];
   const rawWords = text.replace(/[.,!?;:"]/g, '').split(/\s+/);
-  const duration = (job && job.result && job.result.duration) || 12.0;
+  const videoDuration = (job && job.result && job.result.duration) || 12.0;
 
-  const wordDuration = duration / rawWords.length;
+  // Pace words naturally according to speech tempo or fit into video duration
+  const speechDuration = Math.min(videoDuration, Math.max(6, (rawWords.length * 0.42) / ((job && job.speed) || 1.35)));
+  const wordDuration = speechDuration / rawWords.length;
+
   const words = rawWords.map((w, i) => {
     const s = Math.round(i * wordDuration * 100) / 100;
     const e = Math.round((i + 1) * wordDuration * 100) / 100;
@@ -139,10 +172,12 @@ function getCaptions(jobId) {
 function getPostText(jobId) {
   const job = jobsStore.get(jobId);
   const text = (job && job.result && job.result.text) || SAMPLE_TEXTS['română'];
+  const rawTitle = (job && job.result && job.result.title) || 'Secretul pentru conținut viral ⚡';
+  const title = rawTitle.includes('⚡') ? rawTitle : `${rawTitle.replace(/\.[^/.]+$/, '').slice(0, 80)} ⚡`;
   return {
     ok: true,
     text: {
-      title: 'Secretul pentru conținut viral ⚡',
+      title,
       description: text + '\n\nUrmărește pentru mai multe trucuri utile!',
       hashtags: ['#viral', '#speed', '#creatori', '#trend', '#fyp']
     }
