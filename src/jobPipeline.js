@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
 const videoDownloader = require('./videoDownloader');
 const voiceService = require('./voiceService');
 const captionService = require('./captionService');
@@ -14,6 +15,15 @@ const SAMPLE_TEXTS = {
   'germană': "Heute zeige ich Ihnen den schnellsten Weg, virale Inhalte zu erstellen. Die Technologie schreitet unglaublich schnell voran.",
   'franceză': "Aujourd'hui, je vais vous montrer le moyen le plus rapide de créer du contenu viral. La technologie progresse très vite.",
   'italiană': "Oggi ti mostrerò il modo più veloce per creare contenuti virali. La tecnologia sta avanzando incredibilmente veloce."
+};
+
+const LANG_MAP = {
+  'română': { iso: 'ro', short: 'RO' },
+  'engleză': { iso: 'en', short: 'EN' },
+  'spaniolă': { iso: 'es', short: 'ES' },
+  'germană': { iso: 'de', short: 'DE' },
+  'franceză': { iso: 'fr', short: 'FR' },
+  'italiană': { iso: 'it', short: 'IT' }
 };
 
 function detectPlatform(url) {
@@ -32,7 +42,7 @@ function createJob(params) {
   const jobId = 'job_' + crypto.randomBytes(8).toString('hex');
   const platform = detectPlatform(params.url);
   const lang = params.lang || 'română';
-  const voice = params.voice || 'el_viralio';
+  const voice = params.voice || 'ro_emil';
   const speed = Number(params.speed) || 1.35;
   const fit = params.fit || 'voice';
 
@@ -40,16 +50,21 @@ function createJob(params) {
   const words = script.split(/\s+/);
   const defaultDuration = Math.max(8, Math.min(25, (words.length * 0.42) / speed));
 
+  const voiceCfg = voiceService.VOICES_CONFIG[voice] || voiceService.VOICES_CONFIG[voiceService.VOICE_ALIASES[voice]] || { label: 'Emil' };
+  const voiceLabel = params.voiceLabel || voiceCfg.label || 'Emil';
+  const langInfo = LANG_MAP[lang] || { iso: 'ro', short: 'RO' };
+
   const job = {
     jobId,
     url: params.url,
     uploadName: params.uploadName || (platform === 'upload' ? 'video_upload.mp4' : null),
     platform,
     voice,
-    voiceLabel: params.voiceLabel || 'Viralio',
+    voiceLabel,
     speed,
     lang,
-    langShort: (lang === 'română' ? 'RO' : lang.slice(0, 2).toUpperCase()),
+    langIso: langInfo.iso,
+    langShort: langInfo.short,
     fit,
     stage: 'queued',
     status: 'În așteptare...',
@@ -92,9 +107,8 @@ async function advanceJob(job, script, defaultDuration) {
       const extractedCues = dlResult.subtitles.cues;
       const extractedText = dlResult.subtitles.rawText;
       const subLang = dlResult.subtitles.lang || 'en';
-
-      const isSameLang = subLang.toLowerCase().startsWith(job.langShort.toLowerCase()) ||
-                         subLang.toLowerCase().startsWith(job.lang.slice(0, 2).toLowerCase());
+      const targetIso = (job.langIso || (LANG_MAP[job.lang] ? LANG_MAP[job.lang].iso : 'ro')).toLowerCase();
+      const isSameLang = subLang.toLowerCase().startsWith(targetIso);
 
       if (isSameLang) {
         finalScript = extractedText;
@@ -127,6 +141,15 @@ async function advanceJob(job, script, defaultDuration) {
     job.status = 'Sincronizez audio și subtitrările...';
     job.progress = 85;
 
+    // Synchronize subtitle cues and words directly from the synthesized speech!
+    if (synthResult && synthResult.subContent) {
+      const voiceCues = captionService.parseVtt(synthResult.subContent);
+      if (voiceCues && voiceCues.length > 0) {
+        finalCues = voiceCues;
+        wordTimings = captionService.cuesToWords(finalCues);
+      }
+    }
+
     // Mute original video audio and layer synthesized voiceover
     let finalVideoUrl = dlResult.videoUrl;
     let finalFilePath = dlResult.filePath;
@@ -143,6 +166,8 @@ async function advanceJob(job, script, defaultDuration) {
     const realHeight = (dlResult && dlResult.height) ? dlResult.height : 1920;
     const realTitle = (dlResult && dlResult.title) ? dlResult.title : (job.uploadName || 'Video procesat');
 
+    job.filePath = finalFilePath;
+    job.videoUrl = finalVideoUrl;
     job.done = true;
     job.stage = 'render';
     job.status = 'Finalizat cu succes';
@@ -195,7 +220,7 @@ function getCaptions(jobId) {
   const job = jobsStore.get(jobId);
   if (job && job.captions && job.captions.words && job.captions.words.length > 0) {
     const words = job.captions.words;
-    const groups = captionService.wordsToGroups(words, 2);
+    const groups = captionService.wordsToGroups(words, 4);
     return { ok: true, words, groups };
   }
 
@@ -214,7 +239,7 @@ function getCaptions(jobId) {
     return { w, s, e, p };
   });
 
-  const groups = captionService.wordsToGroups(words, 2);
+  const groups = captionService.wordsToGroups(words, 4);
   return { ok: true, words, groups };
 }
 
@@ -233,20 +258,67 @@ function getPostText(jobId) {
   };
 }
 
-function exportJob(jobId, tools) {
+async function exportJob(jobId, tools = {}) {
   const job = jobsStore.get(jobId);
   if (!job) {
     const err = new Error('Job not found');
     err.status = 404;
     throw err;
   }
+
+  let videoPath = job.filePath;
+  if (!videoPath || !fs.existsSync(videoPath)) {
+    if (job.result && job.result.video && job.result.video.startsWith('/files/')) {
+      videoPath = path.join(__dirname, '..', 'data', 'files', path.basename(job.result.video));
+    } else {
+      videoPath = path.join(__dirname, '..', 'public', 'assets', 'sample.mp4');
+    }
+  }
+
+  const captionsWords = (job.captions && job.captions.words) ? job.captions.words : [];
+
+  const hasFilters = Boolean(
+    tools.mirror ||
+    (Array.isArray(tools.blur) && tools.blur.length > 0) ||
+    (tools.mask && tools.mask.enabled) ||
+    (tools.captions && tools.captions.enabled && captionsWords && captionsWords.length > 0)
+  );
+
+  if (!hasFilters) {
+    const sig = 'exp_' + crypto.randomBytes(6).toString('hex');
+    const exp = {
+      sig,
+      state: 'done',
+      progress: 100,
+      status: 'Gata pentru descărcare',
+      url: (job.result && job.result.video) || '/assets/sample.mp4'
+    };
+    job.exp = exp;
+    return { ok: true, exp };
+  }
+
+  let exportResult;
+  try {
+    exportResult = await videoDownloader.exportProcessedVideo({
+      videoPath,
+      tools,
+      captionsWords
+    });
+  } catch (err) {
+    console.warn('[jobPipeline] exportJob error:', err.message);
+    exportResult = {
+      ok: true,
+      videoUrl: (job.result && job.result.video) || '/assets/sample.mp4'
+    };
+  }
+
   const sig = 'exp_' + crypto.randomBytes(6).toString('hex');
   const exp = {
     sig,
     state: 'done',
     progress: 100,
     status: 'Gata pentru descărcare',
-    url: (job.result && job.result.video) || '/assets/sample.mp4'
+    url: (exportResult && exportResult.videoUrl) || (job.result && job.result.video) || '/assets/sample.mp4'
   };
   job.exp = exp;
   return { ok: true, exp };

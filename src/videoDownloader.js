@@ -3,10 +3,15 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
+const { PYTHON_EXE, STATIC_FFMPEG_DIR, FFMPEG_EXE, FFPROBE_EXE } = require('./envConfig');
+
 /**
  * Locate static_ffmpeg or system ffmpeg directory
  */
 function getFfmpegDir() {
+  if (STATIC_FFMPEG_DIR && fs.existsSync(STATIC_FFMPEG_DIR)) {
+    return STATIC_FFMPEG_DIR;
+  }
   const custom = process.env.STATIC_FFMPEG_PATH || process.env.FFMPEG_PATH;
   if (custom && fs.existsSync(custom)) {
     return fs.statSync(custom).isDirectory() ? custom : path.dirname(custom);
@@ -28,6 +33,7 @@ function getFfmpegDir() {
 }
 
 function getFfprobePath() {
+  if (FFPROBE_EXE && fs.existsSync(FFPROBE_EXE)) return FFPROBE_EXE;
   const dir = getFfmpegDir();
   if (dir && fs.existsSync(path.join(dir, 'ffprobe.exe'))) {
     return path.join(dir, 'ffprobe.exe');
@@ -36,6 +42,7 @@ function getFfprobePath() {
 }
 
 function getFfmpegPath() {
+  if (FFMPEG_EXE && fs.existsSync(FFMPEG_EXE)) return FFMPEG_EXE;
   const dir = getFfmpegDir();
   if (dir && fs.existsSync(path.join(dir, 'ffmpeg.exe'))) {
     return path.join(dir, 'ffmpeg.exe');
@@ -109,6 +116,35 @@ function probeVideo(filePath) {
   });
 }
 
+async function ensureCaptions(videoFilePath, existingSubs) {
+  if (existingSubs && existingSubs.cues && existingSubs.cues.length) {
+    return existingSubs;
+  }
+  const geminiService = require('./geminiService');
+  const tempAudio = path.join(path.dirname(videoFilePath), `audio_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.mp3`);
+  try {
+    const { spawnSync } = require('child_process');
+    const ffmpeg = getFfmpegPath();
+    spawnSync(ffmpeg, ['-y', '-i', videoFilePath, '-vn', '-ar', '16000', '-ac', '1', '-b:a', '48k', tempAudio]);
+    if (fs.existsSync(tempAudio) && fs.statSync(tempAudio).size > 1000) {
+      const cues = await geminiService.transcribeAudio(tempAudio);
+      try { fs.unlinkSync(tempAudio); } catch (_) {}
+      if (cues && cues.length) {
+        return {
+          file: null,
+          lang: 'auto',
+          cues,
+          rawText: cues.map(c => c.text).join(' ')
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[videoDownloader] Gemini audio transcription error:', err.message);
+    try { if (fs.existsSync(tempAudio)) fs.unlinkSync(tempAudio); } catch (_) {}
+  }
+  return null;
+}
+
 /**
  * Downloads a video from a web URL using yt-dlp, or resolves an existing uploaded file.
  * Returns metadata: { ok, videoUrl, filePath, title, duration, width, height }
@@ -127,6 +163,7 @@ async function downloadVideo(url, targetFile) {
     const localPath = path.join(filesDir, filename);
     if (fs.existsSync(localPath)) {
       const probe = await probeVideo(localPath);
+      const subtitles = await ensureCaptions(localPath, null);
       return {
         ok: true,
         videoUrl: '/files/' + filename,
@@ -134,7 +171,8 @@ async function downloadVideo(url, targetFile) {
         title: filename,
         duration: probe.duration,
         width: probe.width,
-        height: probe.height
+        height: probe.height,
+        subtitles
       };
     }
   }
@@ -142,6 +180,7 @@ async function downloadVideo(url, targetFile) {
   // 2. Handle direct file paths
   if (fs.existsSync(u)) {
     const probe = await probeVideo(u);
+    const subtitles = await ensureCaptions(u, null);
     return {
       ok: true,
       videoUrl: u.startsWith(filesDir) ? '/files/' + path.basename(u) : '/assets/sample.mp4',
@@ -149,7 +188,8 @@ async function downloadVideo(url, targetFile) {
       title: path.basename(u),
       duration: probe.duration,
       width: probe.width,
-      height: probe.height
+      height: probe.height,
+      subtitles
     };
   }
 
@@ -200,7 +240,10 @@ async function downloadVideo(url, targetFile) {
         if (meta && meta.title) title = meta.title;
       } catch (_) {}
     }
-    const subtitles = extractSubtitles(destPath);
+    let subtitles = extractSubtitles(destPath);
+    if (!subtitles || !subtitles.cues || !subtitles.cues.length) {
+      subtitles = await ensureCaptions(destPath, subtitles);
+    }
     return {
       ok: true,
       videoUrl: '/files/' + filename,
@@ -235,7 +278,7 @@ async function downloadVideo(url, targetFile) {
   ];
 
   return new Promise((resolve) => {
-    const proc = spawn('python', ytArgs);
+    const proc = spawn(PYTHON_EXE, ytArgs);
     let stdout = '';
     let stderr = '';
 
@@ -261,7 +304,10 @@ async function downloadVideo(url, targetFile) {
 
         const probe = await probeVideo(destPath);
         const filename = path.basename(destPath);
-        const subtitles = extractSubtitles(destPath);
+        let subtitles = extractSubtitles(destPath);
+        if (!subtitles || !subtitles.cues || !subtitles.cues.length) {
+          subtitles = await ensureCaptions(destPath, subtitles);
+        }
         resolve({
           ok: true,
           videoUrl: '/files/' + filename,
@@ -367,10 +413,156 @@ function mergeVideoAndAudio(videoPath, audioPath, outputPath) {
   });
 }
 
+function formatSrtTime(sec) {
+  const s = Math.max(0, sec || 0);
+  const hrs = String(Math.floor(s / 3600)).padStart(2, '0');
+  const mins = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+  const secs = String(Math.floor(s % 60)).padStart(2, '0');
+  const ms = String(Math.floor((s % 1) * 1000)).padStart(3, '0');
+  return `${hrs}:${mins}:${secs},${ms}`;
+}
+
+/**
+ * Renders an exported MP4 with tools (mirror, mask, blur, subtitles) burned in using ffmpeg
+ */
+async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [], outputPath }) {
+  const ffmpeg = getFfmpegPath();
+  const filesDir = path.join(__dirname, '..', 'data', 'files');
+  if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true });
+
+  const resolvedVideo = (videoPath && fs.existsSync(videoPath))
+    ? videoPath
+    : path.join(__dirname, '..', 'public', 'assets', 'sample.mp4');
+
+  const dest = outputPath || path.join(filesDir, `export_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.mp4`);
+
+  const probe = await probeVideo(resolvedVideo);
+  const width = probe.width || 720;
+  const height = probe.height || 1280;
+
+  const vfilters = [];
+
+  // 1. Mirror
+  if (tools.mirror) {
+    vfilters.push('hflip');
+  }
+
+  // 2. Mask band
+  if (tools.mask && tools.mask.enabled) {
+    if (tools.mask.blackBg) {
+      const topH = Math.max(1, Math.round(Math.max(0, (tools.mask.posY - tools.mask.thickness / 2) * height)));
+      const botY = Math.min(height - 1, Math.round(Math.min(height, (tools.mask.posY + tools.mask.thickness / 2) * height)));
+      vfilters.push(`drawbox=x=0:y=0:w=${width}:h=${topH}:color=black:t=fill`);
+      vfilters.push(`drawbox=x=0:y=${botY}:w=${width}:h=${height - botY}:color=black:t=fill`);
+    }
+  }
+
+  // 3. Blur bounding boxes
+  if (Array.isArray(tools.blur) && tools.blur.length > 0) {
+    for (const b of tools.blur) {
+      const bx = Math.max(0, Math.min(width - 4, Math.round((b.x / 100) * width)));
+      const by = Math.max(0, Math.min(height - 4, Math.round((b.y / 100) * height)));
+      const bw = Math.max(4, Math.min(width - bx, Math.round((b.w / 100) * width)));
+      const bh = Math.max(4, Math.min(height - by, Math.round((b.h / 100) * height)));
+      vfilters.push(`delogo=x=${bx}:y=${by}:w=${bw}:h=${bh}`);
+    }
+  }
+
+  // 4. Burn subtitles if enabled
+  let srtPath = null;
+  if (tools.captions && tools.captions.enabled && captionsWords && captionsWords.length > 0) {
+    const captionService = require('./captionService');
+    const groups = captionService.wordsToGroups(captionsWords, tools.captions.per || 4);
+    if (groups && groups.length > 0) {
+      srtPath = path.join(filesDir, `sub_${Date.now()}_${crypto.randomBytes(3).toString('hex')}.srt`);
+      let srtContent = '';
+      groups.forEach((g, idx) => {
+        const lineText = g.words.map(w => w.w).join(' ');
+        srtContent += `${idx + 1}\n${formatSrtTime(g.s)} --> ${formatSrtTime(g.e)}\n${lineText}\n\n`;
+      });
+      fs.writeFileSync(srtPath, srtContent, 'utf8');
+
+      const escapedSrt = srtPath.replace(/\\/g, '/').replace(/:/g, '\\:');
+      const fontSize = tools.captions.size === 's' ? 18 : (tools.captions.size === 'l' ? 28 : 22);
+      vfilters.push(`subtitles='${escapedSrt}':force_style='FontSize=${fontSize},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2'`);
+    }
+  }
+
+  return new Promise((resolve) => {
+    let args;
+    if (vfilters.length > 0) {
+      args = [
+        '-y',
+        '-i', resolvedVideo,
+        '-vf', vfilters.join(','),
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-crf', '22',
+        '-c:a', 'copy',
+        '-movflags', '+faststart',
+        dest
+      ];
+    } else {
+      args = [
+        '-y',
+        '-i', resolvedVideo,
+        '-c', 'copy',
+        '-movflags', '+faststart',
+        dest
+      ];
+    }
+
+    const proc = spawn(ffmpeg, args);
+    let stderr = '';
+
+    const timer = setTimeout(() => {
+      try { proc.kill(); } catch (_) {}
+    }, 60000);
+
+    proc.stderr.on('data', d => { stderr += d; });
+
+    proc.on('close', (code) => {
+      clearTimeout(timer);
+      if (srtPath && fs.existsSync(srtPath)) {
+        try { fs.unlinkSync(srtPath); } catch (_) {}
+      }
+      if (code === 0 && fs.existsSync(dest) && fs.statSync(dest).size > 1000) {
+        resolve({
+          ok: true,
+          filePath: dest,
+          videoUrl: '/files/' + path.basename(dest)
+        });
+      } else {
+        console.warn(`[videoDownloader] exportProcessedVideo error (code ${code}):`, stderr.slice(0, 300));
+        resolve({
+          ok: true,
+          filePath: resolvedVideo,
+          videoUrl: '/files/' + path.basename(resolvedVideo)
+        });
+      }
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      if (srtPath && fs.existsSync(srtPath)) {
+        try { fs.unlinkSync(srtPath); } catch (_) {}
+      }
+      console.warn(`[videoDownloader] exportProcessedVideo spawn error:`, err.message);
+      resolve({
+        ok: true,
+        filePath: resolvedVideo,
+        videoUrl: '/files/' + path.basename(resolvedVideo)
+      });
+    });
+  });
+}
+
 module.exports = {
   downloadVideo,
   probeVideo,
   mergeVideoAndAudio,
+  exportProcessedVideo,
+  formatSrtTime,
   getFfmpegDir,
   getFfmpegPath,
   getFfprobePath

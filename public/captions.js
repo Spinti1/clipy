@@ -64,7 +64,7 @@
     // grupuri), dar nu rămâne agățat pe ecran peste o pauză lungă; nu trece peste o pauză
     // sau punctuație și nu se rupe pe două rânduri.
     function groupWords(words, per, fit) {
-        const n = Math.min(3, Math.max(1, parseInt(per) || 2));
+        const n = Math.min(6, Math.max(1, parseInt(per) || 4));
         const list = Array.isArray(words) ? words : [];
         const groups = [];
         let cur = [];
@@ -72,7 +72,7 @@
         for (const w of list) {
             if (cur.length) {
                 const last = cur[cur.length - 1];
-                if (cur.length >= n || last.p > 0 || w.s - last.e >= PAUSE_BREAK || (fit && groupEm(cur.concat(w), fit) > fit.maxEm)) flush();
+                if (cur.length >= n || last.p === 2 || (cur.length >= 3 && last.p === 1) || w.s - last.e >= PAUSE_BREAK || (fit && groupEm(cur.concat(w), fit) > fit.maxEm)) flush();
             }
             cur.push(w);
         }

@@ -8,10 +8,10 @@
             <div class="player" style="width:min(440px, 100%)">
                 <div class="stage" style="aspect-ratio:9/16; width:100%">
                     <div class="flip">
-                        <video class="mask-bg" muted playsinline preload="auto" src="${r.video}" hidden></video>
-                        <video class="main" playsinline preload="metadata" src="${r.video}"></video>
+                        <video class="mask-bg" muted playsinline preload="auto" src="${window.resolveUrl ? window.resolveUrl(r.video) : r.video}" hidden></video>
+                        <video class="main" playsinline preload="metadata" src="${window.resolveUrl ? window.resolveUrl(r.video) : r.video}"></video>
                     </div>
-                    <audio class="voiceover" preload="auto" src="${r.audio || ''}" hidden></audio>
+                    <audio class="voiceover" preload="auto" src="" muted hidden></audio>
                     <div class="boxes"></div>
                     <div class="capview"></div>
                     <div class="lay-sw" hidden>
@@ -25,6 +25,10 @@
                     <button class="icon-btn" data-a="play"><i class="fa-solid fa-play"></i></button>
                     <span class="seek-wrap"><input type="range" class="seek" min="0" max="1000" value="0"><i class="cta-mark" hidden></i></span>
                     <span class="tm mono">0:00 / ${fmtTime(r.duration)}</span>
+                    <div class="vol-wrap">
+                        <button type="button" class="icon-btn vol-btn" data-a="volBtn" title="Sunet on/off"><i class="fa-solid fa-volume-high"></i></button>
+                        <input type="range" class="vol-slider" min="0" max="1" step="0.05" value="1" title="Volum clip">
+                    </div>
                 </div>
             </div>
             <div class="tools">
@@ -57,7 +61,7 @@
                         <div class="cap-grid">
                             ${(CFG.captionPresets || []).map(p => `
                                 <button type="button" class="cap-chip${p.key === c.tools.captions.preset ? ' on' : ''}" data-a="capPreset" data-k="${p.key}">
-                                    <span class="smp" style="font-family:'${p.font}',sans-serif;color:${p.text}">${p.label}</span>
+                                    <span class="smp" style="font-family:'${p.font}',Impact,sans-serif;color:${p.text}">${p.label}</span>
                                     <span class="nm">${p.label}</span>
                                 </button>
                             `).join('')}
@@ -72,7 +76,7 @@
                         </div>
                         <div class="row2">
                             <div><div class="mini-lab">Mărime</div><div class="seg" data-capseg="size">${['s','m','l'].map(v => `<button type="button" class="${v === 'm' ? 'on' : ''}" data-a="capSeg" data-f="size" data-v="${v}">${v.toUpperCase()}</button>`).join('')}</div></div>
-                            <div><div class="mini-lab">Cuvinte</div><div class="seg" data-capseg="per">${[1,2,3].map(v => `<button type="button" class="${v === 2 ? 'on' : ''}" data-a="capSeg" data-f="per" data-v="${v}">${v}</button>`).join('')}</div></div>
+                            <div><div class="mini-lab">Cuvinte</div><div class="seg" data-capseg="per">${[2,4,6].map(v => `<button type="button" class="${v === (c.tools.captions.per || 4) ? 'on' : ''}" data-a="capSeg" data-f="per" data-v="${v}">${v}</button>`).join('')}</div></div>
                         </div>
                     </div>
                 </div>
@@ -92,7 +96,7 @@
                 </div>
 
                 <button class="gen-btn" data-a="download"><i class="fa-solid fa-download"></i> <span class="dl-lab">Exportă & descarcă</span></button>
-                <button class="sched-btn" data-a="schedule"><i class="fa-solid fa-calendar-plus"></i> Programează (Speed Ultra)</button>
+                <button class="sched-btn" data-a="schedule"><i class="fa-solid fa-calendar-plus"></i> Programează postarea</button>
                 <details class="txt"><summary>Textul tradus</summary><p>${esc(r.text)}</p></details>
             </div>
             `;
@@ -101,29 +105,67 @@
 
             const main = $('video.main', el);
             const voice = $('audio.voiceover', el);
-            const seek = $('.seek', el);
+            if (voice) { voice.pause(); voice.muted = true; }
+
+            const seek = $('input.seek', el);
             const tm = $('.tm', el);
             main.ontimeupdate = () => {
                 if (main.duration) seek.value = Math.round(main.currentTime / main.duration * 1000);
                 tm.textContent = `${fmtTime(main.currentTime)} / ${fmtTime(main.duration || r.duration)}`;
-                if (voice && voice.src && !voice.paused && Math.abs(voice.currentTime - main.currentTime) > 0.25) {
-                    voice.currentTime = main.currentTime;
-                }
                 this.renderKaraoke(c);
             };
             main.onended = () => {
-                if (voice) { voice.pause(); voice.currentTime = 0; }
                 const icon = $('[data-a=play] i', el);
                 if (icon) icon.className = 'fa-solid fa-play';
                 const bigPlay = $('.big-play', el);
                 if (bigPlay) bigPlay.hidden = false;
             };
 
+            // Volume controls
+            const volSlider = $('.vol-slider', el);
+            const volBtn = $('.vol-btn', el);
+            const volIcon = $('i', volBtn);
+            if (volSlider) {
+                volSlider.oninput = e => {
+                    const val = parseFloat(e.target.value);
+                    main.volume = val;
+                    main.muted = (val === 0);
+                    if (volIcon) {
+                        volIcon.className = val === 0 ? 'fa-solid fa-volume-xmark' : (val < 0.5 ? 'fa-solid fa-volume-low' : 'fa-solid fa-volume-high');
+                    }
+                };
+            }
+            if (volBtn) {
+                volBtn.onclick = e => {
+                    e.stopPropagation();
+                    if (main.muted || main.volume === 0) {
+                        main.muted = false;
+                        main.volume = 1;
+                        if (volSlider) volSlider.value = 1;
+                        if (volIcon) volIcon.className = 'fa-solid fa-volume-high';
+                    } else {
+                        main.muted = true;
+                        if (volSlider) volSlider.value = 0;
+                        if (volIcon) volIcon.className = 'fa-solid fa-volume-xmark';
+                    }
+                };
+            }
+
+            // Stage click: toggle play/pause anywhere on video
             const stage = $('.stage', el);
             stage.onclick = e => {
                 if (e.target.closest('.bbox') || e.target.closest('.rm') || e.target.closest('.rs')) return;
+                e.stopPropagation();
                 window.togglePlayCard && window.togglePlayCard(c);
             };
+
+            const bigPlay = $('.big-play', el);
+            if (bigPlay) {
+                bigPlay.onclick = e => {
+                    e.stopPropagation();
+                    window.togglePlayCard && window.togglePlayCard(c);
+                };
+            }
 
             this.wireStageInteractions(c);
             this.loadCaptions(c);
@@ -229,7 +271,7 @@
             const preset = (CFG.captionPresets || []).find(p => p.key === cap.preset) || CFG.captionPresets[0];
             const fit = window.Captions ? window.Captions.fitFor(preset, 1080, 50) : null;
             c.computedGroups = window.Captions
-                ? window.Captions.groupWords(c.captionsData.words, cap.per || 2, fit)
+                ? window.Captions.groupWords(c.captionsData.words, cap.per || 4, fit)
                 : [];
         },
 
@@ -248,7 +290,10 @@
             const t = v ? v.currentTime : 0;
             const groups = c.computedGroups;
 
-            let curGroup = groups.find(g => t >= g.s && t < g.e);
+            let curGroup = groups.find(g => t >= g.s && t <= g.e);
+            if (!curGroup) {
+                curGroup = groups.find(g => t >= g.s && t <= (g.e + 0.6));
+            }
             if (!curGroup && v && v.paused) curGroup = groups[0];
             if (!curGroup) {
                 view.innerHTML = '';
@@ -256,17 +301,23 @@
             }
 
             const preset = (CFG.captionPresets || []).find(p => p.key === cap.preset) || CFG.captionPresets[0];
-            const fontSize = cap.size === 's' ? '18px' : cap.size === 'l' ? '28px' : '23px';
+            const fontSize = cap.size === 's' ? '20px' : cap.size === 'l' ? '30px' : '24px';
             const hl = preset.active.toLowerCase() !== preset.text.toLowerCase();
+            const glowStyle = preset.glow ? `text-shadow:0 0 8px ${preset.glow}, 0 0 16px ${preset.glow};` : `text-shadow:0 2px 4px rgba(0,0,0,0.85);`;
+            const boxStyle = preset.box ? `background:${preset.box};padding:6px 14px;border-radius:8px;box-decoration-break:clone;-webkit-box-decoration-break:clone;` : '';
+            const strokeStyle = preset.outline ? `-webkit-text-stroke:${(preset.outline * 24).toFixed(1)}px ${preset.glow || '#000'};paint-order:stroke fill;` : '';
 
             view.innerHTML = `
-                <span style="font-family:'${preset.font}',Impact,sans-serif;font-size:${fontSize};letter-spacing:${(preset.spacing||0)*20}px;-webkit-text-stroke:${(preset.outline||0)*20}px #000;text-shadow:0 2px 4px rgba(0,0,0,0.8);${preset.box ? `background:${preset.box};padding:4px 8px;border-radius:6px;` : ''}">
+                <span style="font-family:'${preset.font}',Impact,sans-serif;font-size:${fontSize};letter-spacing:${(preset.spacing||0)*20}px;${strokeStyle}${glowStyle}${boxStyle};display:inline-block;">
                     ${curGroup.words.map(w => {
-                        const isActive = t >= w.s && t <= w.e;
+                        const isActive = t >= w.s && t <= (w.e + 0.12);
                         const wordColor = (isActive && hl) ? preset.active : preset.text;
                         const wordText = preset.upper ? w.w.toUpperCase() : w.w;
-                        return `<span style="color:${wordColor}">${esc(wordText)}</span>`;
-                    }).join(' ')}
+                        const activeStyle = isActive
+                            ? `transform:scale(1.12);font-weight:900;text-shadow:0 0 14px ${preset.active};`
+                            : `opacity:0.92;`;
+                        return `<span style="color:${wordColor};display:inline-block;transition:transform 0.08s ease, color 0.08s ease;margin:0 4px;${activeStyle}">${esc(wordText)}</span>`;
+                    }).join('')}
                 </span>
             `;
         }

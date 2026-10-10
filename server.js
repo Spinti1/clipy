@@ -1,3 +1,4 @@
+require('./src/envConfig');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -13,45 +14,51 @@ app.use('/files', express.static(path.join(__dirname, 'data', 'files')));
 
 // Exact configuration from speed.viralio.ro
 const APP_CONFIG = {
-  cost: 3,
+  cost: 0,
+  free: true,
   voiceCharsPerCredit: 1000,
   maxSec: 600,
   maxUploadMb: 1024,
   defaultSpeed: 1.35,
   speedMin: 0.8,
   speedMax: 1.5,
-  defaultVoice: "el_viralio",
+  defaultVoice: "ro_emil",
   voices: [
-    { key: "el_viralio", label: "Viralio", tag: "M · vocea casei", sample: "/api/voice-preview/el_viralio" },
-    { key: "el_claudiu", label: "Claudiu", tag: "M · român nativ", sample: "/api/voice-preview/el_claudiu" },
-    { key: "el_cristi", label: "Cristi", tag: "M · român, profund", sample: "/api/voice-preview/el_cristi" },
-    { key: "el_zaturk", label: "ZaTurk", tag: "M · român, narator", sample: "/api/voice-preview/el_zaturk" },
-    { key: "el_nick", label: "Nick", tag: "M · român, documentar", sample: "/api/voice-preview/el_nick" },
-    { key: "el_adrian", label: "Adrian", tag: "M · român, matur", sample: "/api/voice-preview/el_adrian" },
-    { key: "el_adi", label: "Adi", tag: "M · român, grav", sample: "/api/voice-preview/el_adi" },
-    { key: "el_mihai", label: "Mihai", tag: "M · român, profesionist", sample: "/api/voice-preview/el_mihai" },
-    { key: "el_iulian", label: "Iulian", tag: "M · român, clar", sample: "/api/voice-preview/el_iulian" },
-    { key: "el_ciprian", label: "Ciprian", tag: "M · român, relaxat", sample: "/api/voice-preview/el_ciprian" },
-    { key: "el_oliver", label: "Oliver", tag: "M · român, ferm", sample: "/api/voice-preview/el_oliver" },
-    { key: "el_iosif", label: "Iosif", tag: "M · român, teatral", sample: "/api/voice-preview/el_iosif" },
-    { key: "el_cornel", label: "Cornel", tag: "M · român, energic", sample: "/api/voice-preview/el_cornel" },
-    { key: "el_delia", label: "Delia", tag: "F · română, radio", sample: "/api/voice-preview/el_delia" },
-    { key: "el_ela", label: "Ela", tag: "F · română, caldă", sample: "/api/voice-preview/el_ela" },
-    { key: "el_roxana", label: "Roxana", tag: "F · română, naturală", sample: "/api/voice-preview/el_roxana" },
-    { key: "el_alexandra", label: "Alexandra", tag: "F · română, social media", sample: "/api/voice-preview/el_alexandra" },
-    { key: "el_ilinca", label: "Ilinca", tag: "F · română, reclame", sample: "/api/voice-preview/el_ilinca" },
-    { key: "mm_radu", label: "Radu", tag: "M · român, tânăr", sample: "/api/voice-preview/mm_radu" },
-    { key: "mm_sorin", label: "Sorin", tag: "M · român, sigur", sample: "/api/voice-preview/mm_sorin" },
-    { key: "mm_ioana", label: "Ioana", tag: "F · română, optimistă", sample: "/api/voice-preview/mm_ioana" },
-    { key: "mm_elena", label: "Elena", tag: "F · română, blândă", sample: "/api/voice-preview/mm_elena" },
-    { key: "el_brian", label: "Brian", tag: "M · profund", sample: "/api/voice-preview/el_brian" },
-    { key: "el_roger", label: "Roger", tag: "M · relaxat", sample: "/api/voice-preview/el_roger" },
-    { key: "el_george", label: "George", tag: "M · povestitor", sample: "/api/voice-preview/el_george" },
-    { key: "el_callum", label: "Callum", tag: "M · intens", sample: "/api/voice-preview/el_callum" },
-    { key: "el_charlie", label: "Charlie", tag: "M · energic", sample: "/api/voice-preview/el_charlie" },
-    { key: "el_sarah", label: "Sarah", tag: "F · clară", sample: "/api/voice-preview/el_sarah" },
-    { key: "el_jessica", label: "Jessica", tag: "F · expresivă", sample: "/api/voice-preview/el_jessica" },
-    { key: "el_laura", label: "Laura", tag: "F · vioaie", sample: "/api/voice-preview/el_laura" }
+    // Română (4)
+    { key: "ro_emil", label: "Emil", tag: "M · clar, narativ", lang: "română", sample: "/api/voice-preview/ro_emil" },
+    { key: "ro_alina", label: "Alina", tag: "F · caldă, naturală", lang: "română", sample: "/api/voice-preview/ro_alina" },
+    { key: "ro_radu", label: "Radu", tag: "M · tânăr, energic", lang: "română", sample: "/api/voice-preview/ro_radu" },
+    { key: "ro_delia", label: "Delia", tag: "F · radio, podcast", lang: "română", sample: "/api/voice-preview/ro_delia" },
+
+    // Engleză (4)
+    { key: "en_christopher", label: "Christopher", tag: "M · autoritar, povestitor", lang: "engleză", sample: "/api/voice-preview/en_christopher" },
+    { key: "en_jenny", label: "Jenny", tag: "F · naturală, conversațională", lang: "engleză", sample: "/api/voice-preview/en_jenny" },
+    { key: "en_guy", label: "Guy", tag: "M · pasionat, dinamic", lang: "engleză", sample: "/api/voice-preview/en_guy" },
+    { key: "en_aria", label: "Aria", tag: "F · luminoasă, energică", lang: "engleză", sample: "/api/voice-preview/en_aria" },
+
+    // Spaniolă (4)
+    { key: "es_alvaro", label: "Alvaro", tag: "M · nativ, profesional", lang: "spaniolă", sample: "/api/voice-preview/es_alvaro" },
+    { key: "es_elvira", label: "Elvira", tag: "F · caldă, clară", lang: "spaniolă", sample: "/api/voice-preview/es_elvira" },
+    { key: "es_jorge", label: "Jorge", tag: "M · profund, podcast", lang: "spaniolă", sample: "/api/voice-preview/es_jorge" },
+    { key: "es_ximena", label: "Ximena", tag: "F · dinamică, social", lang: "spaniolă", sample: "/api/voice-preview/es_ximena" },
+
+    // Germană (4)
+    { key: "de_conrad", label: "Conrad", tag: "M · profesional, ferm", lang: "germană", sample: "/api/voice-preview/de_conrad" },
+    { key: "de_katja", label: "Katja", tag: "F · clară, optimistă", lang: "germană", sample: "/api/voice-preview/de_katja" },
+    { key: "de_florian", label: "Florian", tag: "M · modern, narativ", lang: "germană", sample: "/api/voice-preview/de_florian" },
+    { key: "de_amala", label: "Amala", tag: "F · blândă, radio", lang: "germană", sample: "/api/voice-preview/de_amala" },
+
+    // Franceză (4)
+    { key: "fr_henri", label: "Henri", tag: "M · dinamic, elegant", lang: "franceză", sample: "/api/voice-preview/fr_henri" },
+    { key: "fr_denise", label: "Denise", tag: "F · naturală, caldă", lang: "franceză", sample: "/api/voice-preview/fr_denise" },
+    { key: "fr_remy", label: "Remy", tag: "M · tânăr, energic", lang: "franceză", sample: "/api/voice-preview/fr_remy" },
+    { key: "fr_eloise", label: "Eloise", tag: "F · expresivă, vibrantă", lang: "franceză", sample: "/api/voice-preview/fr_eloise" },
+
+    // Italiană (4)
+    { key: "it_diego", label: "Diego", tag: "M · sigur, natural", lang: "italiană", sample: "/api/voice-preview/it_diego" },
+    { key: "it_elsa", label: "Elsa", tag: "F · expresivă, plăcută", lang: "italiană", sample: "/api/voice-preview/it_elsa" },
+    { key: "it_giuseppe", label: "Giuseppe", tag: "M · profund, documentar", lang: "italiană", sample: "/api/voice-preview/it_giuseppe" },
+    { key: "it_isabella", label: "Isabella", tag: "F · vioaie, social", lang: "italiană", sample: "/api/voice-preview/it_isabella" }
   ],
   langs: [
     { key: "română", label: "Română", flag: "🇷🇴", short: "RO", iso: "ro" },
@@ -72,18 +79,18 @@ const APP_CONFIG = {
     { key: "simplu", label: "Simplu", font: "Anton", text: "#FFFFFF", active: "#FFFFFF", outline: 0.04, shadow: 0.05, upper: false }
   ],
   captionSizes: { s: 0.045, m: 0.058, l: 0.074 },
-  captionDefaults: { enabled: false, preset: "clasic", posY: 0.72, size: "m", per: 2 },
+  captionDefaults: { enabled: false, preset: "clasic", posY: 0.72, size: "m", per: 4 },
   ctaMaxSec: 15
 };
 
 // Global state stores (in-memory with disk backup capability)
 const state = {
   user: {
-    id: "usr_viralio_demo",
-    name: "Viralio Creator",
-    email: "creator@viralio.ro",
-    picture: "https://api.dicebear.com/7.x/bottts/svg?seed=viralio",
-    credits: 150,
+    id: "usr_clipy_demo",
+    name: "Clipy Creator",
+    email: "creator@clipy.app",
+    picture: "https://api.dicebear.com/7.x/bottts/svg?seed=clipy",
+    credits: 999999,
     voice_characters: 250000,
     subscriptionPlan: "Pro",
     subscriptionStatus: "active"
@@ -92,6 +99,11 @@ const state = {
   cta: null,
   history: []
 };
+
+// API: Health check
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, status: 'healthy', uptime: process.uptime() });
+});
 
 // API: Config
 app.get('/api/config', (req, res) => {
@@ -175,6 +187,7 @@ app.delete('/api/cta', (req, res) => {
 });
 
 const jobPipeline = require('./src/jobPipeline.js');
+jobPipeline.jobsStore.clear();
 
 app.get('/api/jobs', (req, res) => {
   res.json({ jobs: Array.from(jobPipeline.jobsStore.values()).reverse() });
@@ -228,11 +241,12 @@ app.get('/api/jobs/:id/captions', (req, res) => {
   }
 });
 
-app.post('/api/jobs/:id/export', (req, res) => {
+app.post('/api/jobs/:id/export', async (req, res) => {
   try {
-    const data = jobPipeline.exportJob(req.params.id, req.body.tools);
+    const data = await jobPipeline.exportJob(req.params.id, req.body.tools);
     res.json(data);
   } catch (err) {
+    console.error('EXPORT ROUTE ERROR:', err);
     res.status(err.status || 500).json({ ok: false, error: err.message });
   }
 });
@@ -248,14 +262,33 @@ app.post('/api/jobs/:id/post-text', (req, res) => {
 
 const voiceService = require('./src/voiceService.js');
 
-app.get('/api/voice-preview/:key', (req, res) => {
+app.get('/api/voice-preview/:key', async (req, res) => {
   try {
-    const wav = voiceService.generateVoiceSampleWav(req.params.key);
+    const key = req.params.key;
+    if (req.query.format === 'wav') {
+      const wav = voiceService.generateVoiceSampleWav(key);
+      res.setHeader('Content-Type', 'audio/wav');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.send(wav);
+    }
+    const mp3Path = await voiceService.generateVoicePreviewMp3(key).catch(() => null);
+    if (mp3Path && fs.existsSync(mp3Path)) {
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.sendFile(path.resolve(mp3Path));
+    }
+    const wav = voiceService.generateVoiceSampleWav(key);
     res.setHeader('Content-Type', 'audio/wav');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.send(wav);
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    try {
+      const wav = voiceService.generateVoiceSampleWav(req.params.key);
+      res.setHeader('Content-Type', 'audio/wav');
+      res.send(wav);
+    } catch (_) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
   }
 });
 

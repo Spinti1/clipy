@@ -1,5 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const { PYTHON_EXE } = require('./envConfig');
+const geminiService = require('./geminiService');
 
 const cache = new Map();
 
@@ -23,23 +25,10 @@ function normalizeLang(lang) {
   return LANG_MAP[l] || l;
 }
 
-async function translateText(text, fromLang = 'en', toLang = 'ro') {
-  const clean = String(text || '').trim();
-  if (!clean) return '';
-
-  const src = normalizeLang(fromLang);
-  const tgt = normalizeLang(toLang);
-
-  if (src === tgt) return clean;
-
-  const cacheKey = `${src}_${tgt}_${clean}`;
-  if (cache.has(cacheKey)) {
-    return cache.get(cacheKey);
-  }
-
+async function translateTextWithWorker(clean, src, tgt) {
   return new Promise((resolve) => {
     const workerScript = path.join(__dirname, 'translateWorker.py');
-    const proc = spawn('python', [workerScript]);
+    const proc = spawn(PYTHON_EXE, [workerScript]);
 
     let stdout = '';
     let stderr = '';
@@ -58,7 +47,6 @@ async function translateText(text, fromLang = 'en', toLang = 'ro') {
         try {
           const res = JSON.parse(stdout);
           if (res.ok && res.result) {
-            cache.set(cacheKey, res.result);
             resolve(res.result);
             return;
           }
@@ -77,22 +65,64 @@ async function translateText(text, fromLang = 'en', toLang = 'ro') {
   });
 }
 
+async function translateText(text, fromLang = 'en', toLang = 'ro') {
+  const clean = String(text || '').trim();
+  if (!clean) return '';
+
+  const src = normalizeLang(fromLang);
+  const tgt = normalizeLang(toLang);
+
+  if (src === tgt) return clean;
+
+  const cacheKey = `${src}_${tgt}_${clean}`;
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey);
+  }
+
+  // 1. Primary: Gemini Flash Lite
+  try {
+    const res = await geminiService.translateText(clean, toLang);
+    if (res && res !== clean) {
+      cache.set(cacheKey, res);
+      return res;
+    }
+  } catch (err) {
+    console.warn('[translateService] Gemini translateText error, falling back to worker:', err.message);
+  }
+
+  // 2. Fallback: Python deep-translator
+  const workerRes = await translateTextWithWorker(clean, src, tgt);
+  cache.set(cacheKey, workerRes);
+  return workerRes;
+}
+
 async function translateCues(cues, fromLang = 'en', toLang = 'ro') {
   if (!cues || !cues.length) return [];
   const src = normalizeLang(fromLang);
   const tgt = normalizeLang(toLang);
   if (src === tgt) return cues;
 
-  const translated = [];
+  // 1. Primary: Gemini batch cue translation (fast & preserves timing)
+  try {
+    const translated = await geminiService.translateCues(cues, toLang);
+    if (translated && translated.length) {
+      return translated;
+    }
+  } catch (err) {
+    console.warn('[translateService] Gemini translateCues error, falling back:', err.message);
+  }
+
+  // 2. Fallback: translate cue-by-cue
+  const fallbackList = [];
   for (const cue of cues) {
     const t = await translateText(cue.text, fromLang, toLang);
-    translated.push({
+    fallbackList.push({
       start: cue.start,
       end: cue.end,
       text: t || cue.text
     });
   }
-  return translated;
+  return fallbackList;
 }
 
 module.exports = {

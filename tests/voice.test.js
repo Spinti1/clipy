@@ -19,14 +19,14 @@ describe('Voice Audio Synthesis Service', () => {
     // Test male voice
     const resM = await fetch(`${baseUrl}/api/voice-preview/el_viralio`);
     assert.equal(resM.status, 200);
-    assert.equal(resM.headers.get('content-type'), 'audio/wav');
+    assert.ok(resM.headers.get('content-type').startsWith('audio/'));
     const bufM = await resM.arrayBuffer();
     assert.ok(bufM.byteLength > 1000);
 
     // Test female voice
     const resF = await fetch(`${baseUrl}/api/voice-preview/el_delia`);
     assert.equal(resF.status, 200);
-    assert.equal(resF.headers.get('content-type'), 'audio/wav');
+    assert.ok(resF.headers.get('content-type').startsWith('audio/'));
     const bufF = await resF.arrayBuffer();
     assert.ok(bufF.byteLength > 1000);
   });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Viralio · Speed</title>
+<title>Clipy · Video Speed</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 <meta name="theme-color" content="#09090f">
 
@@ -21,14 +21,18 @@
 <nav class="vn-nav">
     <a href="/" class="vn-brand">
         <div class="vn-logo"><i class="fa-solid fa-bolt"></i></div>
-        <span class="vn-title">Viralio</span>
+        <span class="vn-title">Clipy</span>
         <span class="vn-badge">Speed</span>
     </a>
     <div class="vn-right">
-        <div class="vn-credits" id="topNavCredits" title="Apasă pentru a adăuga credite demonstrative"><i class="fa-solid fa-coins"></i> <span id="userCreditsDisplay">150</span> credite</div>
+        <button type="button" id="backendConnBtn" class="vn-backend-btn" title="Configurare conexiune server backend Render">
+            <span class="backend-dot"></span>
+            <span id="backendStatusText">Server Activ</span>
+        </button>
+        <div class="vn-credits"><i class="fa-solid fa-infinity"></i> 100% Gratuit · Nelimitat</div>
         <div class="vn-user">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=viralio" alt="" class="vn-avatar">
-            <span id="userNameDisplay">Viralio Creator</span>
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=clipy" alt="" class="vn-avatar">
+            <span id="userNameDisplay">Clipy Creator</span>
         </div>
     </div>
 </nav>
@@ -39,10 +43,10 @@
         <div class="hd">
             <div class="hd-ico"><i class="fa-solid fa-bolt"></i></div>
             <div>
-                <h1>Speed<span class="ultra-tag" id="ultraTag">Ultra</span></h1>
-                <p>Link → voce tradusă fix pe video</p>
+                <h1>Clipy<span class="ultra-tag" id="ultraTag">Speed</span></h1>
+                <p>Link → voce tradusă și subtitrări sincronizate</p>
             </div>
-            <span class="cost-pill" id="costPill">3 cr + voce</span>
+            <span class="cost-pill" id="costPill">100% Gratuit</span>
         </div>
 
         <div id="srcBox" class="src-box">
@@ -81,7 +85,7 @@
         </div>
 
         <div>
-            <div class="field-label"><i class="fa-solid fa-microphone-lines"></i> Voce <span class="link-counter" id="voiceCount">30 voci</span></div>
+            <div class="field-label"><i class="fa-solid fa-microphone-lines"></i> Voce <span class="link-counter" id="voiceCount">4 voci</span></div>
             <div class="voices" id="voiceGrid" role="radiogroup" aria-label="Voce"></div>
         </div>
 
@@ -182,13 +186,30 @@ function toast(msg) {
     toastTimer = setTimeout(() => t.classList.remove('show'), 3600);
 }
 
+let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || '';
+if (API_BASE) API_BASE = API_BASE.replace(/\/+$/, '');
+
+function resolveUrl(path) {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:') || path.startsWith('data:')) {
+        return path;
+    }
+    if (API_BASE) {
+        return `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
+    }
+    return path;
+}
+window.resolveUrl = resolveUrl;
+window.API_BASE = API_BASE;
+
 async function api(path, opts = {}) {
     const init = { method: opts.method || 'GET', headers: {} };
     if (opts.body) {
         init.headers['Content-Type'] = 'application/json';
         init.body = JSON.stringify(opts.body);
     }
-    const r = await fetch(path, init);
+    const targetUrl = resolveUrl(path);
+    const r = await fetch(targetUrl, init);
     const data = await r.json().catch(() => ({}));
     if (!r.ok || data.ok === false) {
         throw new Error(data.error || `Eroare ${r.status}`);
@@ -230,7 +251,7 @@ const platOf = u => (PLAT_RE.find(([re]) => re.test(u)) || [])[1] || null;
 
 let CFG = null;
 const state = {
-    voice: 'el_viralio',
+    voice: 'ro_emil',
     speed: 1.35,
     lang: 'română',
     fit: 'voice',
@@ -245,7 +266,7 @@ const defaultTools = () => ({
     mirror: false,
     blur: [],
     mask: { enabled: false, posY: 0.5, thickness: 0.5, zoom: 1.6, blackBg: false },
-    captions: { enabled: true, preset: 'clasic', posY: 0.72, size: 'm', per: 2 },
+    captions: { enabled: true, preset: 'clasic', posY: 0.72, size: 'm', per: 4 },
     cta: false,
     ctaAt: null
 });
@@ -261,7 +282,7 @@ window.playVoiceSample = function(key) {
         currentAudio.pause();
         setPlayIcon(currentKey, 'play');
     }
-    const a = new Audio(`/api/voice-preview/${key}`);
+    const a = new Audio(resolveUrl(`/api/voice-preview/${key}`));
     currentAudio = a;
     currentKey = key;
     setPlayIcon(key, 'spin');
@@ -408,23 +429,17 @@ window.togglePlayCard = function(c) { togglePlay(c); };
 function togglePlay(c) {
     const v = $('video.main', c.el);
     const bg = $('video.mask-bg', c.el);
-    const voice = $('audio.voiceover', c.el);
     const icon = $('[data-a=play] i', c.el);
     const bigPlay = $('.big-play', c.el);
     if (!v) return;
     if (v.paused) {
         v.play().catch(() => {});
         if (!bg.hidden) bg.play().catch(() => {});
-        if (voice && voice.src && voice.paused) {
-            voice.currentTime = v.currentTime;
-            voice.play().catch(() => {});
-        }
         if (icon) icon.className = 'fa-solid fa-pause';
         if (bigPlay) bigPlay.hidden = true;
     } else {
         v.pause();
         if (!bg.hidden) bg.pause();
-        if (voice) voice.pause();
         if (icon) icon.className = 'fa-solid fa-play';
         if (bigPlay) bigPlay.hidden = false;
     }
@@ -436,6 +451,8 @@ function updateCounts() {
     $('#empty').hidden = n > 0;
     $('#clearDone').hidden = n === 0;
 }
+
+const activeSessionJobs = new Set();
 
 window.startBatchJobs = async function() {
     const links = SetupPanel.parseLinks();
@@ -454,13 +471,13 @@ window.startBatchJobs = async function() {
         });
 
         d.results.forEach(r => {
-            if (r.ok && r.job) upsertCard(r.job);
+            if (r.ok && r.job) {
+                activeSessionJobs.add(r.job.jobId);
+                upsertCard(r.job);
+            }
         });
 
-        state.user.credits = Math.max(0, state.user.credits - (urls.length * 3));
-        $('#userCreditsDisplay').textContent = state.user.credits;
-
-        toast(`${urls.length} joburi pornite în paralel! ⚡`);
+        toast(`${urls.length} clip${urls.length > 1 ? 'uri pornite' : ' pornit'} gratuit! ⚡`);
         pollJobs();
     } catch (e) {
         toast(e.message);
@@ -471,8 +488,8 @@ window.startBatchJobs = async function() {
 
 async function pollJobs() {
     const d = await api('/api/jobs');
-    (d.jobs || []).forEach(upsertCard);
-    const busy = (d.jobs || []).some(j => !j.done);
+    (d.jobs || []).filter(j => activeSessionJobs.has(j.jobId) || cards.has(j.jobId)).forEach(upsertCard);
+    const busy = (d.jobs || []).some(j => activeSessionJobs.has(j.jobId) && !j.done);
     if (busy) setTimeout(pollJobs, 1000);
 }
 
@@ -506,24 +523,7 @@ function openScheduleModal(c) {
 }
 
 $('#clearDone').onclick = () => { cards.clear(); $('#jobs').innerHTML = ''; updateCounts(); api('/api/jobs/clear', { method: 'POST' }); };
-$('#topNavCredits').onclick = () => { $('#topup-modal').hidden = false; };
-$('#closeTopupBtn').onclick = () => { $('#topup-modal').hidden = true; };
-$('#closeUModalBtn').onclick = () => { $('#ultra-modal').hidden = true; };
-
-$('#add50CreditsBtn').onclick = async () => {
-    const d = await api('/api/auth/topup', { method: 'POST', body: { amount: 50 } });
-    state.user.credits = d.credits;
-    $('#userCreditsDisplay').textContent = d.credits;
-    $('#topup-modal').hidden = true;
-    toast('+50 credite adăugate cu succes! ⚡');
-};
-$('#add200CreditsBtn').onclick = async () => {
-    const d = await api('/api/auth/topup', { method: 'POST', body: { amount: 200 } });
-    state.user.credits = d.credits;
-    $('#userCreditsDisplay').textContent = d.credits;
-    $('#topup-modal').hidden = true;
-    toast('+200 credite adăugate cu succes! ⚡');
-};
+if ($('#closeUModalBtn')) $('#closeUModalBtn').onclick = () => { $('#ultra-modal').hidden = true; };
 
 $('#tabs').onclick = e => {
     const b = e.target.closest('button');
@@ -574,14 +574,42 @@ document.onkeydown = e => {
     SetupPanel.addRow(null, '');
     CFG = await api('/api/config');
     $('#lang').innerHTML = CFG.langs.map(l => `<option value="${l.key}">${l.flag} ${l.label}</option>`).join('');
+    $('#lang').value = state.lang;
     SetupPanel.renderVoices();
     SetupPanel.refreshRows();
-    const me = await api('/api/auth/me');
-    if (me.user) {
-        state.user = me.user;
-        $('#userCreditsDisplay').textContent = me.user.credits;
-        $('#userNameDisplay').textContent = me.user.name;
+    const backendBtn = $('#backendConnBtn');
+    if (backendBtn) {
+        backendBtn.onclick = () => {
+            const cur = localStorage.getItem('clipy_backend_url') || '';
+            const input = prompt('Introdu URL-ul serverului Render (ex: https://clipy-backend.onrender.com) sau lasă gol pentru local:', cur);
+            if (input !== null) {
+                const val = input.trim().replace(/\/+$/, '');
+                if (val) localStorage.setItem('clipy_backend_url', val);
+                else localStorage.removeItem('clipy_backend_url');
+                location.reload();
+            }
+        };
     }
+
+    async function checkBackend() {
+        const btn = $('#backendConnBtn');
+        const txt = $('#backendStatusText');
+        if (!btn || !txt) return;
+        try {
+            const h = await api('/api/health').catch(() => null);
+            if (h && h.ok) {
+                btn.classList.remove('disconnected');
+                txt.textContent = API_BASE ? 'Render ⚡' : 'Conectat ⚡';
+            } else {
+                btn.classList.add('disconnected');
+                txt.textContent = 'Deconectat';
+            }
+        } catch {
+            btn.classList.add('disconnected');
+            txt.textContent = 'Deconectat';
+        }
+    }
+    checkBackend();
 })();
 </script>
 </body>

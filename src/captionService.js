@@ -1,12 +1,13 @@
 function parseTime(t) {
-  const parts = String(t || '').trim().split(':');
+  const normalized = String(t || '').trim().replace(',', '.');
+  const parts = normalized.split(':');
   if (parts.length === 3) {
     return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
   }
   if (parts.length === 2) {
     return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
   }
-  return parseFloat(t) || 0;
+  return parseFloat(normalized) || 0;
 }
 
 function parseVtt(content) {
@@ -20,12 +21,12 @@ function parseVtt(content) {
     if (!line || line.startsWith('WEBVTT') || line.startsWith('Kind:') || line.startsWith('Language:') || line.startsWith('NOTE')) {
       continue;
     }
-    const match = line.match(/^(\d{2}:[\d:.]+)\s+-->\s+(\d{2}:[\d:.]+)/);
+    const match = line.match(/^(\d{1,2}:[\d:.,]+)\s+-->\s+(\d{1,2}:[\d:.,]+)/);
     if (match) {
       if (currentCue && currentCue.text) cues.push(currentCue);
       currentCue = {
-        start: Math.round(parseTime(match[1]) * 100) / 100,
-        end: Math.round(parseTime(match[2]) * 100) / 100,
+        start: Math.round(parseTime(match[1]) * 1000) / 1000,
+        end: Math.round(parseTime(match[2]) * 1000) / 1000,
         text: ''
       };
     } else if (currentCue && !line.match(/^\d+$/)) {
@@ -55,14 +56,22 @@ function cuesToWords(cues) {
     if (!rawTokens.length) continue;
 
     const cueDuration = Math.max(0.2, cue.end - cue.start);
-    const tokenDuration = cueDuration / rawTokens.length;
+    // Weight tokens by character length so short words take less time and long words more time
+    const weights = rawTokens.map(tok => {
+      const cleanLen = tok.replace(/[^a-zA-Z0-9ăâîșțĂÂÎȘȚ]/g, '').length;
+      return Math.max(2, cleanLen);
+    });
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
 
+    let curTime = cue.start;
     rawTokens.forEach((token, idx) => {
       const cleanWord = token.replace(/[.,!?;:"]/g, '');
       if (!cleanWord) return;
 
-      const s = Math.round((cue.start + idx * tokenDuration) * 100) / 100;
-      const e = Math.round((cue.start + (idx + 1) * tokenDuration) * 100) / 100;
+      const dur = (weights[idx] / totalWeight) * cueDuration;
+      const s = Math.round(curTime * 1000) / 1000;
+      const e = Math.round((curTime + dur) * 1000) / 1000;
+      curTime += dur;
 
       let p = 0;
       if (idx === rawTokens.length - 1 || /[.!?]$/.test(token)) p = 2;
@@ -75,9 +84,9 @@ function cuesToWords(cues) {
   return words;
 }
 
-function wordsToGroups(words, per = 2) {
+function wordsToGroups(words, per = 4) {
   const groups = [];
-  const chunkSize = Math.max(1, per || 2);
+  const chunkSize = Math.max(1, per || 4);
   for (let i = 0; i < words.length; i += chunkSize) {
     const chunk = words.slice(i, i + chunkSize);
     groups.push({

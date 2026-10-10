@@ -2,3 +2,8 @@ node_modules/
 .superpowers/
 .DS_Store
 data/
+public/assets/merged_*.mp4
+*.log
+.env
+
+.vercel

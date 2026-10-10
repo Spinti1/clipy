@@ -2,49 +2,96 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { PYTHON_EXE } = require('./envConfig');
 
 const audioCache = new Map();
 
-const FEMALE_KEYS = [
-  'el_delia', 'el_ela', 'el_roxana', 'el_alexandra', 'el_ilinca',
-  'mm_ioana', 'mm_elena', 'el_sarah', 'el_jessica', 'el_laura'
-];
+const VOICES_CONFIG = {
+  // Română (4)
+  'ro_emil': { voice: 'ro-RO-EmilNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'română', label: 'Emil', tag: 'M · clar, narativ' },
+  'ro_alina': { voice: 'ro-RO-AlinaNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'română', label: 'Alina', tag: 'F · caldă, naturală' },
+  'ro_radu': { voice: 'ro-RO-EmilNeural', pitch: '+8Hz', rateDelta: 4, female: false, lang: 'română', label: 'Radu', tag: 'M · tânăr, energic' },
+  'ro_delia': { voice: 'ro-RO-AlinaNeural', pitch: '+12Hz', rateDelta: 2, female: true, lang: 'română', label: 'Delia', tag: 'F · radio, podcast' },
+
+  // Engleză (4)
+  'en_christopher': { voice: 'en-US-ChristopherNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'engleză', label: 'Christopher', tag: 'M · autoritar, povestitor' },
+  'en_jenny': { voice: 'en-US-JennyNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'engleză', label: 'Jenny', tag: 'F · naturală, conversațională' },
+  'en_guy': { voice: 'en-US-GuyNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'engleză', label: 'Guy', tag: 'M · pasionat, dinamic' },
+  'en_aria': { voice: 'en-US-AriaNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'engleză', label: 'Aria', tag: 'F · luminoasă, energică' },
+
+  // Spaniolă (4)
+  'es_alvaro': { voice: 'es-ES-AlvaroNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'spaniolă', label: 'Alvaro', tag: 'M · nativ, profesional' },
+  'es_elvira': { voice: 'es-ES-ElviraNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'spaniolă', label: 'Elvira', tag: 'F · caldă, clară' },
+  'es_jorge': { voice: 'es-ES-AlvaroNeural', pitch: '-8Hz', rateDelta: 3, female: false, lang: 'spaniolă', label: 'Jorge', tag: 'M · profund, podcast' },
+  'es_ximena': { voice: 'es-ES-XimenaNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'spaniolă', label: 'Ximena', tag: 'F · dinamică, social' },
+
+  // Germană (4)
+  'de_conrad': { voice: 'de-DE-ConradNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'germană', label: 'Conrad', tag: 'M · profesional, ferm' },
+  'de_katja': { voice: 'de-DE-KatjaNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'germană', label: 'Katja', tag: 'F · clară, optimistă' },
+  'de_florian': { voice: 'de-DE-FlorianMultilingualNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'germană', label: 'Florian', tag: 'M · modern, narativ' },
+  'de_amala': { voice: 'de-DE-AmalaNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'germană', label: 'Amala', tag: 'F · blândă, radio' },
+
+  // Franceză (4)
+  'fr_henri': { voice: 'fr-FR-HenriNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'franceză', label: 'Henri', tag: 'M · dinamic, elegant' },
+  'fr_denise': { voice: 'fr-FR-DeniseNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'franceză', label: 'Denise', tag: 'F · naturală, caldă' },
+  'fr_remy': { voice: 'fr-FR-RemyMultilingualNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'franceză', label: 'Remy', tag: 'M · tânăr, energic' },
+  'fr_eloise': { voice: 'fr-FR-EloiseNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'franceză', label: 'Eloise', tag: 'F · expresivă, vibrantă' },
+
+  // Italiană (4)
+  'it_diego': { voice: 'it-IT-DiegoNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'italiană', label: 'Diego', tag: 'M · sigur, natural' },
+  'it_elsa': { voice: 'it-IT-ElsaNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'italiană', label: 'Elsa', tag: 'F · expresivă, plăcută' },
+  'it_giuseppe': { voice: 'it-IT-GiuseppeMultilingualNeural', pitch: '+0Hz', rateDelta: 0, female: false, lang: 'italiană', label: 'Giuseppe', tag: 'M · profund, documentar' },
+  'it_isabella': { voice: 'it-IT-IsabellaNeural', pitch: '+0Hz', rateDelta: 0, female: true, lang: 'italiană', label: 'Isabella', tag: 'F · vioaie, social' }
+};
+
+const VOICE_ALIASES = {
+  'el_viralio': 'ro_emil',
+  'el_claudiu': 'ro_radu',
+  'el_delia': 'ro_delia',
+  'el_alina': 'ro_alina',
+  'el_cristi': 'ro_emil',
+  'el_adrian': 'ro_emil',
+  'el_adi': 'ro_radu',
+  'el_zaturk': 'ro_emil',
+  'el_nick': 'ro_radu',
+  'el_mihai': 'ro_emil',
+  'el_brian': 'en_guy',
+  'el_sarah': 'en_aria',
+  'el_jessica': 'en_jenny'
+};
+
+const PREVIEW_TEXTS = {
+  'română': 'Salut, acesta este un preview cu vocea mea.',
+  'engleză': 'Hello, this is a quick preview of my voice.',
+  'spaniolă': 'Hola, esta es una vista previa de mi voz.',
+  'germană': 'Hallo, das ist eine Hörprobe meiner Stimme.',
+  'franceză': 'Bonjour, ceci est un aperçu de ma voix.',
+  'italiană': 'Ciao, questa è una breve anteprima della mia voce.'
+};
 
 function isFemaleVoice(key) {
-  return FEMALE_KEYS.includes(key);
+  const normKey = VOICE_ALIASES[key] || key;
+  return VOICES_CONFIG[normKey] ? VOICES_CONFIG[normKey].female : false;
 }
-
-const VOICE_PERSONAS = {
-  'el_cristi': { pitch: '-15Hz', rateDelta: 0 },
-  'el_adi': { pitch: '-22Hz', rateDelta: -3 },
-  'el_zaturk': { pitch: '-10Hz', rateDelta: 0 },
-  'el_adrian': { pitch: '-6Hz', rateDelta: 0 },
-  'el_cornel': { pitch: '+10Hz', rateDelta: 5 },
-  'el_delia': { pitch: '+12Hz', rateDelta: 2 },
-  'el_ilinca': { pitch: '+14Hz', rateDelta: 3 },
-  'el_claudiu': { pitch: '+0Hz', rateDelta: 4 },
-  'el_nick': { pitch: '-3Hz', rateDelta: -4 },
-  'mm_radu': { pitch: '+12Hz', rateDelta: 2 },
-  'mm_ioana': { pitch: '+16Hz', rateDelta: 2 },
-  'mm_elena': { pitch: '-6Hz', rateDelta: -2 }
-};
-
-const LANG_VOICES = {
-  'română': { m: 'ro-RO-EmilNeural', f: 'ro-RO-AlinaNeural' },
-  'engleză': { m: 'en-US-ChristopherNeural', f: 'en-US-JennyNeural' },
-  'spaniolă': { m: 'es-ES-AlvaroNeural', f: 'es-ES-ElviraNeural' },
-  'germană': { m: 'de-DE-ConradNeural', f: 'de-DE-KatjaNeural' },
-  'franceză': { m: 'fr-FR-HenriNeural', f: 'fr-FR-DeniseNeural' },
-  'italiană': { m: 'it-IT-DiegoNeural', f: 'it-IT-ElsaNeural' }
-};
 
 function resolveVoice(voiceKey, lang) {
   const normLang = String(lang || 'română').toLowerCase();
-  const pair = LANG_VOICES[normLang] || LANG_VOICES['română'];
-  const female = isFemaleVoice(voiceKey);
-  const voiceName = female ? pair.f : pair.m;
-  const persona = VOICE_PERSONAS[voiceKey] || { pitch: '+0Hz', rateDelta: 0 };
-  return { voiceName, persona, female };
+  const key = VOICE_ALIASES[voiceKey] || voiceKey;
+  let cfg = VOICES_CONFIG[key];
+
+  // If voiceKey doesn't match language, pick the best matching voice for that language
+  if (!cfg || (cfg.lang !== normLang && normLang)) {
+    const matching = Object.values(VOICES_CONFIG).find(v => v.lang === normLang);
+    if (matching) cfg = matching;
+    else cfg = VOICES_CONFIG['ro_emil'];
+  }
+
+  return {
+    voiceName: cfg.voice,
+    persona: { pitch: cfg.pitch || '+0Hz', rateDelta: cfg.rateDelta || 0 },
+    female: cfg.female,
+    label: cfg.label
+  };
 }
 
 /**
@@ -63,6 +110,7 @@ async function synthesizeSpeech({ text, voiceKey, lang, speed, outputFile }) {
   const pitchArg = persona.pitch || '+0Hz';
 
   const cleanText = String(text || '').trim();
+  const subPath = destPath.replace(/\.mp3$/, '.vtt');
 
   return new Promise((resolve) => {
     const args = [
@@ -71,10 +119,11 @@ async function synthesizeSpeech({ text, voiceKey, lang, speed, outputFile }) {
       '--rate', rateArg,
       '--pitch', pitchArg,
       '--text', cleanText,
-      '--write-media', destPath
+      '--write-media', destPath,
+      '--write-subtitles', subPath
     ];
 
-    const proc = spawn('python', args);
+    const proc = spawn(PYTHON_EXE, args);
     let stderr = '';
 
     const timer = setTimeout(() => {
@@ -89,14 +138,19 @@ async function synthesizeSpeech({ text, voiceKey, lang, speed, outputFile }) {
 
       if (code === 0 && fs.existsSync(destPath) && fs.statSync(destPath).size > 1000) {
         const probe = await videoDownloader.probeVideo(destPath);
+        let subContent = null;
+        if (fs.existsSync(subPath)) {
+          try { subContent = fs.readFileSync(subPath, 'utf8'); } catch (_) {}
+        }
         resolve({
           ok: true,
           filePath: destPath,
           audioUrl: '/files/' + path.basename(destPath),
-          duration: probe.duration || 4.0
+          duration: probe.duration || 4.0,
+          subPath,
+          subContent
         });
       } else {
-        // Fallback to synthesized PCM audio if edge-tts fails
         console.warn(`[voiceService] edge-tts error (code ${code}): ${stderr.slice(0, 200)}. Using fallback wav.`);
         const fallbackWav = generateVoiceSampleWav(voiceKey);
         const fallbackPath = destPath.replace(/\.mp3$/, '.wav');
@@ -124,6 +178,26 @@ async function synthesizeSpeech({ text, voiceKey, lang, speed, outputFile }) {
       });
     });
   });
+}
+
+async function generateVoicePreviewMp3(voiceKey) {
+  const key = VOICE_ALIASES[voiceKey] || voiceKey;
+  const cfg = VOICES_CONFIG[key] || VOICES_CONFIG['ro_emil'];
+  const sampleText = PREVIEW_TEXTS[cfg.lang] || PREVIEW_TEXTS['română'];
+  const filesDir = path.join(__dirname, '..', 'data', 'files');
+  if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true });
+  const previewPath = path.join(filesDir, `preview_${key}.mp3`);
+  if (fs.existsSync(previewPath) && fs.statSync(previewPath).size > 1000) {
+    return previewPath;
+  }
+  const res = await synthesizeSpeech({
+    text: sampleText,
+    voiceKey: key,
+    lang: cfg.lang,
+    speed: 1.0,
+    outputFile: previewPath
+  });
+  return res.filePath;
 }
 
 function generateVoiceSampleWav(voiceKey) {
@@ -187,8 +261,11 @@ function generateVoiceSampleWav(voiceKey) {
 }
 
 module.exports = {
+  VOICES_CONFIG,
+  VOICE_ALIASES,
   synthesizeSpeech,
   generateVoiceSampleWav,
+  generateVoicePreviewMp3,
   isFemaleVoice,
   resolveVoice
 };

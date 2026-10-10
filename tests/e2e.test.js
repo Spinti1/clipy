@@ -18,9 +18,9 @@ describe('Full End-to-End System Journey', () => {
   test('Full User Workflow: Configure -> Upload -> Process -> Caption -> Export -> Schedule', async () => {
     // 1. Fetch config & user info
     const cfg = await (await fetch(`${baseUrl}/api/config`)).json();
-    assert.equal(cfg.defaultVoice, 'el_viralio');
+    assert.equal(cfg.defaultVoice, 'ro_emil');
     const me = await (await fetch(`${baseUrl}/api/auth/me`)).json();
-    assert.equal(me.user.name, 'Viralio Creator');
+    assert.equal(me.user.name, 'Clipy Creator');
     const initialCredits = me.user.credits;
 
     // 2. Upload video

@@ -1,7 +1,7 @@
 {
-  "name": "viralio-speed-replica",
+  "name": "clipy",
   "version": "1.0.0",
-  "description": "Full functional replica of Viralio Speed video translation platform",
+  "description": "Clipy - AI Video Translation, Dubbing and Karaoke Captions",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

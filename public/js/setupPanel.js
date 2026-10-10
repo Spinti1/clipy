@@ -74,6 +74,14 @@
                 $$('#fitSeg button').forEach(x => x.classList.toggle('on', x === b));
             };
 
+            const langSelect = $('#lang');
+            if (langSelect) {
+                langSelect.onchange = e => {
+                    state.lang = e.target.value;
+                    this.renderVoices();
+                };
+            }
+
             $('#voiceGrid').onclick = e => {
                 const play = e.target.closest('.vplay');
                 if (play) { window.playVoiceSample(play.dataset.play); return; }
@@ -158,14 +166,22 @@
         },
 
         renderVoices() {
-            if (!CFG) return;
-            $('#voiceGrid').innerHTML = CFG.voices.map(v => `
+            if (!CFG || !CFG.voices) return;
+            const currentLang = state.lang || 'română';
+            const langVoices = CFG.voices.filter(v => v.lang === currentLang);
+            const voicesToShow = langVoices.length ? langVoices : CFG.voices.slice(0, 4);
+
+            if (!voicesToShow.some(v => v.key === state.voice)) {
+                state.voice = voicesToShow[0].key;
+            }
+
+            $('#voiceGrid').innerHTML = voicesToShow.map(v => `
                 <div class="vchip${v.key === state.voice ? ' on' : ''}" data-v="${esc(v.key)}">
                     <div class="vtx"><div class="vn">${esc(v.label)}</div><div class="vt">${esc(v.tag)}</div></div>
                     <span class="vplay" data-play="${esc(v.key)}"><i class="fa-solid fa-play"></i></span>
                 </div>
             `).join('');
-            $('#voiceCount').textContent = CFG.voices.length + ' voci';
+            $('#voiceCount').textContent = voicesToShow.length + ' voci';
         },
 
         selectVoice(k) {
