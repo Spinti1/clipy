@@ -2,6 +2,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const videoDownloader = require('./videoDownloader');
 const voiceService = require('./voiceService');
+const captionService = require('./captionService');
+const translateService = require('./translateService');
 
 const jobsStore = new Map();
 
@@ -79,24 +81,50 @@ async function advanceJob(job, script, defaultDuration) {
     const dlResult = await videoDownloader.downloadVideo(job.url);
 
     job.stage = 'translate';
-    job.status = 'Traduc textul...';
+    job.status = 'Traduc conținutul videoului...';
     job.progress = 45;
-    await new Promise(r => setTimeout(r, 200));
+
+    let finalScript = script;
+    let wordTimings = null;
+    let finalCues = null;
+
+    if (dlResult && dlResult.subtitles && dlResult.subtitles.cues && dlResult.subtitles.cues.length > 0) {
+      const extractedCues = dlResult.subtitles.cues;
+      const extractedText = dlResult.subtitles.rawText;
+      const subLang = dlResult.subtitles.lang || 'en';
+
+      const isSameLang = subLang.toLowerCase().startsWith(job.langShort.toLowerCase()) ||
+                         subLang.toLowerCase().startsWith(job.lang.slice(0, 2).toLowerCase());
+
+      if (isSameLang) {
+        finalScript = extractedText;
+        finalCues = extractedCues;
+      } else {
+        // Real translation from video's captions into user's selected language!
+        const translatedText = await translateService.translateText(extractedText, subLang, job.lang);
+        finalScript = translatedText || extractedText;
+
+        // Translate individual cues to preserve timing
+        finalCues = await translateService.translateCues(extractedCues, subLang, job.lang);
+      }
+
+      wordTimings = captionService.cuesToWords(finalCues);
+    }
 
     job.stage = 'voice';
-    job.status = 'Generez vocea AI...';
+    job.status = 'Generez vocea AI din textul tradus...';
     job.progress = 65;
 
-    // Real voiceover synthesis in requested voice persona and language
+    // Real voiceover synthesis in requested voice persona and language from translated text
     const synthResult = await voiceService.synthesizeSpeech({
-      text: script,
+      text: finalScript,
       voiceKey: job.voice,
       lang: job.lang,
       speed: job.speed
     });
 
     job.stage = 'sync';
-    job.status = 'Sincronizez audio cu imaginea...';
+    job.status = 'Sincronizez audio și subtitrările...';
     job.progress = 85;
 
     // Mute original video audio and layer synthesized voiceover
@@ -128,13 +156,17 @@ async function advanceJob(job, script, defaultDuration) {
       originalVideo: dlResult.videoUrl,
       audio: synthResult.audioUrl,
       audioDuration: synthResult.duration,
-      text: script,
+      text: finalScript,
       plan: {
         mode: job.fit,
         tempo: job.speed,
         speed: 1.0,
         fill: 'fit'
       }
+    };
+    job.captions = {
+      words: wordTimings,
+      cues: finalCues
     };
   } catch (err) {
     console.error(`[jobPipeline] Job ${job.jobId} error:`, err);
@@ -161,8 +193,14 @@ async function advanceJob(job, script, defaultDuration) {
 
 function getCaptions(jobId) {
   const job = jobsStore.get(jobId);
+  if (job && job.captions && job.captions.words && job.captions.words.length > 0) {
+    const words = job.captions.words;
+    const groups = captionService.wordsToGroups(words, 2);
+    return { ok: true, words, groups };
+  }
+
   const text = (job && job.result && job.result.text) || SAMPLE_TEXTS['română'];
-  const rawWords = text.replace(/[.,!?;:"]/g, '').split(/\s+/);
+  const rawWords = text.replace(/[.,!?;:"]/g, '').split(/\s+/).filter(Boolean);
   const videoDuration = (job && job.result && job.result.duration) || 12.0;
 
   // Pace words naturally according to speech tempo or fit into video duration
@@ -176,17 +214,7 @@ function getCaptions(jobId) {
     return { w, s, e, p };
   });
 
-  // Basic groups
-  const groups = [];
-  for (let i = 0; i < words.length; i += 2) {
-    const chunk = words.slice(i, i + 2);
-    groups.push({
-      s: chunk[0].s,
-      e: chunk[chunk.length - 1].e,
-      words: chunk
-    });
-  }
-
+  const groups = captionService.wordsToGroups(words, 2);
   return { ok: true, words, groups };
 }
 

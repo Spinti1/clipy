@@ -158,6 +158,37 @@ async function downloadVideo(url, targetFile) {
   const destPath = targetFile || path.join(filesDir, `vid_${urlHash}.mp4`);
   const metaPath = destPath + '.meta.json';
 
+  function extractSubtitles(dest) {
+    const dir = path.dirname(dest);
+    const base = path.basename(dest, path.extname(dest));
+    const captionService = require('./captionService');
+
+    try {
+      const files = fs.readdirSync(dir).filter(f => f.startsWith(base) && f.endsWith('.vtt'));
+      if (!files.length) return null;
+
+      // Prioritize target languages: ro, en, or first available
+      let chosen = files.find(f => f.includes('.ro') || f.includes('ro-'));
+      if (!chosen) chosen = files.find(f => f.includes('.en') || f.includes('en-'));
+      if (!chosen) chosen = files[0];
+
+      const content = fs.readFileSync(path.join(dir, chosen), 'utf8');
+      const cues = captionService.parseVtt(content);
+      if (cues && cues.length) {
+        const langMatch = chosen.match(/\.([a-z]{2}(?:-[a-z]{2})?)\.vtt$/i);
+        return {
+          file: path.join(dir, chosen),
+          lang: langMatch ? langMatch[1] : 'en',
+          cues,
+          rawText: cues.map(c => c.text).join(' ')
+        };
+      }
+    } catch (err) {
+      console.warn('[videoDownloader] Subtitle parse error:', err.message);
+    }
+    return null;
+  }
+
   // If already downloaded and valid file size > 10KB, reuse cache
   if (!targetFile && fs.existsSync(destPath) && fs.statSync(destPath).size > 10000) {
     const probe = await probeVideo(destPath);
@@ -169,6 +200,7 @@ async function downloadVideo(url, targetFile) {
         if (meta && meta.title) title = meta.title;
       } catch (_) {}
     }
+    const subtitles = extractSubtitles(destPath);
     return {
       ok: true,
       videoUrl: '/files/' + filename,
@@ -176,7 +208,8 @@ async function downloadVideo(url, targetFile) {
       title,
       duration: probe.duration,
       width: probe.width,
-      height: probe.height
+      height: probe.height,
+      subtitles
     };
   }
 
@@ -184,10 +217,16 @@ async function downloadVideo(url, targetFile) {
   const ytArgs = [
     '-m', 'yt_dlp',
     '--no-simulate',
+    '--no-abort-on-error',
+    '--ignore-errors',
     '--js-runtimes', 'node',
     ...(ffmpegDir ? ['--ffmpeg-location', ffmpegDir] : []),
     '-S', 'res,vcodec:h264,acodec:m4a',
     '--merge-output-format', 'mp4',
+    '--write-subs',
+    '--write-auto-subs',
+    '--sub-format', 'vtt',
+    '--sub-langs', 'en,ro,es,de,fr,it',
     '-o', destPath,
     '--force-overwrites',
     '--no-playlist',
@@ -222,6 +261,7 @@ async function downloadVideo(url, targetFile) {
 
         const probe = await probeVideo(destPath);
         const filename = path.basename(destPath);
+        const subtitles = extractSubtitles(destPath);
         resolve({
           ok: true,
           videoUrl: '/files/' + filename,
@@ -229,7 +269,8 @@ async function downloadVideo(url, targetFile) {
           title,
           duration: probe.duration,
           width: probe.width,
-          height: probe.height
+          height: probe.height,
+          subtitles
         });
       } else {
         console.warn(`[videoDownloader] yt-dlp exited with code ${code}. Stderr: ${stderr.slice(0, 300)}`);

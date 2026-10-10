@@ -35,11 +35,11 @@ describe('YouTube Real Download Integration in Pipeline', () => {
     assert.equal(createData.results.length, 1);
     const jobId = createData.results[0].job.jobId;
 
-    // 2. Poll until completed (real download takes 1-3 seconds)
+    // 2. Poll until completed (real download, translation and TTS take 8-15 seconds on cold run)
     let finishedJob = null;
-    const maxTries = 25;
+    const maxTries = 45;
     for (let i = 0; i < maxTries; i++) {
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 500));
       const res = await fetch(`${baseUrl}/api/jobs`);
       const data = await res.json();
       const current = (data.jobs || []).find(j => j.jobId === jobId);
@@ -84,5 +84,14 @@ describe('YouTube Real Download Integration in Pipeline', () => {
     });
     const expData = await expRes.json();
     assert.equal(expData.exp.url, finishedJob.result.video);
+
+    // 7. Verify extracted & translated subtitles contain the real video content
+    const capRes = await fetch(`${baseUrl}/api/jobs/${jobId}/captions`);
+    assert.equal(capRes.status, 200);
+    const capData = await capRes.json();
+    assert.ok(capData.words.length > 5);
+    const allWords = capData.words.map(w => w.w.toLowerCase()).join(' ');
+    assert.ok(allWords.includes('elefan') || allWords.includes('tromp') || allWords.includes('lung') || allWords.includes('bine'));
+    assert.ok(finishedJob.result.text.toLowerCase().includes('elefan') || finishedJob.result.text.toLowerCase().includes('lung') || finishedJob.result.text.toLowerCase().includes('faț'));
   });
 });
