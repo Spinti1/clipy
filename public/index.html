@@ -244,7 +244,7 @@ if (storedBackend.includes('loca.lt')) {
     localStorage.removeItem('clipy_backend_url');
 }
 
-const DEFAULT_REMOTE_BACKEND = 'https://biol-slight-hammer-spears.trycloudflare.com';
+const DEFAULT_REMOTE_BACKEND = 'https://small-favour-explore-interventions.trycloudflare.com';
 let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || (window.location.hostname.includes('vercel.app') ? DEFAULT_REMOTE_BACKEND : '');
 if (API_BASE) API_BASE = API_BASE.replace(/\/+$/, '');
 

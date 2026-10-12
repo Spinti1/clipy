@@ -1,10 +1,11 @@
 services:
   - type: web
     name: clipy-backend
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    env: node
     plan: free
     region: frankfurt
+    buildCommand: pip install --user edge-tts deep-translator yt-dlp && npm install
+    startCommand: node server.js
     healthCheckPath: /api/health
     envVars:
       - key: PORT
