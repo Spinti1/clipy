@@ -448,9 +448,9 @@ const PRESET_STYLES = {
   galben:   { font: 'Anton', active: '#FFD400', text: '#FFFFFF', upper: true, outline: 3.5, shadow: 1.5 },
   comic:    { font: 'Bangers', active: '#FF3B5C', text: '#FFFFFF', upper: true, outline: 3.5, shadow: 2.0 },
   bubble:   { font: 'Luckiest Guy', active: '#38BDF8', text: '#FFFFFF', upper: false, outline: 4.0, shadow: 2.0 },
-  neon:     { font: 'Bangers', active: '#FFF36B', text: '#FFFFFF', upper: true, outline: 3.0, shadow: 2.5 },
-  boxnegru: { font: 'Anton', active: '#FFD400', text: '#FFFFFF', upper: true, outline: 3.0, shadow: 1.5 },
-  boxverde: { font: 'Anton', active: '#FFFFFF', text: '#07130D', upper: true, outline: 2.5, shadow: 1.0 },
+  neon:     { font: 'Bangers', active: '#FFF36B', text: '#FFFFFF', upper: true, outline: 4.0, shadow: 0.0, glow: '#FF4FD8' },
+  boxnegru: { font: 'Anton', active: '#FFD400', text: '#FFFFFF', upper: true, box: '#000000', pad: 8 },
+  boxverde: { font: 'Anton', active: '#FFFFFF', text: '#07130D', upper: true, box: '#65D69E', pad: 8 },
   simplu:   { font: 'Anton', active: '#FFFFFF', text: '#FFFFFF', upper: false, outline: 2.0, shadow: 1.0 }
 };
 
@@ -466,15 +466,23 @@ function generateAssScript({ groups, width, height, capTools, title, duration = 
   const isUpper = preset.upper !== false;
   const activeColor = hexToAssColor(preset.active, '&H009ED665&');
   const normalColor = hexToAssColor(preset.text, '&H00FFFFFF&');
-  const outlineColor = '&H00000000&';
-  const shadowColor = '&H80000000&';
+  const isBox = Boolean(preset.box);
+  const outlineColor = isBox
+    ? hexToAssColor(preset.box, '&H00000000&')
+    : (preset.glow ? hexToAssColor(preset.glow, '&H00D84FFF&') : '&H00000000&');
 
   const sizeKey = cap.size || 'm';
-  const sizeFactor = sizeKey === 's' ? 0.058 : (sizeKey === 'l' ? 0.088 : 0.072);
+  const sizeFactor = sizeKey === 's' ? 0.054 : (sizeKey === 'l' ? 0.078 : 0.064);
   const fontSize = Math.max(28, Math.round(width * sizeFactor));
 
+  // Match vertical center of subtitle line to posY in preview editor
   const posY = Number(cap.posY != null ? cap.posY : 0.72);
-  const marginV = Math.max(30, Math.round((1 - posY) * height));
+  const marginV = Math.max(20, Math.round((1 - posY) * height - fontSize / 2));
+
+  const borderStyle = isBox ? 3 : 1;
+  const outlineSize = isBox ? (preset.pad || 10) : (preset.outline || 3.5);
+  const shadowSize = isBox ? 0 : (preset.shadow || 1.5);
+  const backColor = '&H00000000&';
 
   let ass = `[Script Info]
 ScriptType: v4.00+
@@ -484,22 +492,22 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,${fontName},${fontSize},${normalColor},${activeColor},${outlineColor},${shadowColor},-1,0,0,0,100,100,1,0,1,${preset.outline},${preset.shadow},2,30,30,${marginV},1
+Style: Default,${fontName},${fontSize},${normalColor},${activeColor},${outlineColor},${backColor},-1,0,0,0,100,100,1,0,${borderStyle},${outlineSize},${shadowSize},2,30,30,${marginV},1
 `;
 
+  const titleMarginV = Math.max(35, Math.round(height * 0.04));
   if (title) {
-    const titleSize = Math.max(32, Math.round(width * 0.052));
-    const titleMarginV = Math.max(40, Math.round(height * 0.045));
-    ass += `Style: TitleHeader,${fontName},${titleSize},&H00FFFFFF&,&H00FFFFFF&,&H00000000&,&H80000000&,-1,0,0,0,100,100,0,0,1,3.5,1.5,8,30,30,${titleMarginV},1\n`;
+    const titleSize = Math.max(30, Math.round(width * 0.034));
+    ass += `Style: TitleHeader,${fontName},${titleSize},&H00FFFFFF&,&H00FFFFFF&,&HB0000000&,&H00000000&,-1,0,0,0,100,100,0,0,3,10,0,8,30,30,${titleMarginV},1\n`;
   }
 
   ass += `\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
 
   if (title) {
-    const cleanTitle = String(title).replace(/[\r\n]+/g, ' ').trim();
-    const titleText = isUpper ? cleanTitle.toUpperCase() : cleanTitle;
+    const rawTitle = String(title).replace(/[\r\n]+/g, ' ').replace(/^⚡\s*/, '').replace(/\s*⚡$/, '').trim();
+    const titleText = isUpper ? rawTitle.toUpperCase() : rawTitle;
     const endT = Math.max(duration || 60, 600);
-    ass += `Dialogue: 1,0:00:00.00,${formatAssTime(endT)},TitleHeader,,0,0,0,,{\\b1}${titleText}{\\b0}\n`;
+    ass += `Dialogue: 1,0:00:00.00,${formatAssTime(endT)},TitleHeader,,0,0,${titleMarginV},,{\\b1}⚡ ${titleText}{\\b0}\n`;
   }
 
   if (Array.isArray(groups)) {
@@ -518,7 +526,7 @@ Style: Default,${fontName},${fontSize},${normalColor},${activeColor},${outlineCo
         const lineText = words.map((cur, curIdx) => {
           const txt = isUpper ? String(cur.w).toUpperCase() : cur.w;
           if (curIdx === i) {
-            return `{\\c${activeColor}}${txt}{\\c${normalColor}}`;
+            return `{\\fscx114\\fscy114\\c${activeColor}}${txt}{\\fscx100\\fscy100\\c${normalColor}}`;
           }
           return txt;
         }).join(' ');
@@ -560,15 +568,24 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
   let currentLabel = '0:v';
   let step = 0;
 
-  // 1. Layout normalization: if horizontal, add blurred background to fill 1080x1920 and center sharp video
+  // 1. Layout normalization matching the preview editor:
+  const hasBlurBg = Boolean(tools.mask && tools.mask.enabled && !tools.mask.blackBg);
   if (!isVertical) {
-    const bgLabel = `bg_${++step}`;
-    const fgLabel = `fg_${++step}`;
-    const baseLabel = `v_${++step}`;
-    filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,avgblur=sizeX=25:sizeY=25[${bgLabel}]`);
-    filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=decrease[${fgLabel}]`);
-    filterChains.push(`[${bgLabel}][${fgLabel}]overlay=(W-w)/2:(H-h)/2[${baseLabel}]`);
-    currentLabel = baseLabel;
+    if (hasBlurBg) {
+      const bgZoom = (tools.mask && tools.mask.zoom) || 1.6;
+      const bgLabel = `bg_${++step}`;
+      const fgLabel = `fg_${++step}`;
+      const baseLabel = `v_${++step}`;
+      filterChains.push(`[${currentLabel}]scale=1080*${bgZoom}:1920*${bgZoom}:force_original_aspect_ratio=increase,crop=1080:1920,avgblur=sizeX=25:sizeY=25[${bgLabel}]`);
+      filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=decrease[${fgLabel}]`);
+      filterChains.push(`[${bgLabel}][${fgLabel}]overlay=(W-w)/2:(H-h)/2[${baseLabel}]`);
+      currentLabel = baseLabel;
+    } else {
+      // Default: exact object-fit: contain on solid black background matching editor .stage background: #000!
+      const baseLabel = `v_${++step}`;
+      filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black[${baseLabel}]`);
+      currentLabel = baseLabel;
+    }
   } else if (srcW !== width || srcH !== height) {
     const scaleLabel = `v_${++step}`;
     filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black[${scaleLabel}]`);
@@ -610,18 +627,34 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
   }
 
   // 4. Mask band
-  if (tools.mask && tools.mask.enabled && tools.mask.blackBg) {
-    const topH = Math.max(1, Math.round(Math.max(0, (tools.mask.posY - tools.mask.thickness / 2) * height)));
-    const botY = Math.min(height - 1, Math.round(Math.min(height, (tools.mask.posY + tools.mask.thickness / 2) * height)));
-    const nextLabel1 = `v_${++step}`;
-    const nextLabel2 = `v_${++step}`;
-    filterChains.push(`[${currentLabel}]drawbox=x=0:y=0:w=${width}:h=${topH}:color=black:t=fill[${nextLabel1}]`);
-    filterChains.push(`[${nextLabel1}]drawbox=x=0:y=${botY}:w=${width}:h=${height - botY}:color=black:t=fill[${nextLabel2}]`);
-    currentLabel = nextLabel2;
+  if (tools.mask && tools.mask.enabled) {
+    if (tools.mask.blackBg) {
+      const topH = Math.max(1, Math.round(Math.max(0, (tools.mask.posY - tools.mask.thickness / 2) * height)));
+      const botY = Math.min(height - 1, Math.round(Math.min(height, (tools.mask.posY + tools.mask.thickness / 2) * height)));
+      const nextLabel1 = `v_${++step}`;
+      const nextLabel2 = `v_${++step}`;
+      filterChains.push(`[${currentLabel}]drawbox=x=0:y=0:w=${width}:h=${topH}:color=black:t=fill[${nextLabel1}]`);
+      filterChains.push(`[${nextLabel1}]drawbox=x=0:y=${botY}:w=${width}:h=${height - botY}:color=black:t=fill[${nextLabel2}]`);
+      currentLabel = nextLabel2;
+    } else if (isVertical) {
+      const bgZoom = (tools.mask && tools.mask.zoom) || 1.6;
+      const topH = Math.max(0, Math.round((tools.mask.posY - tools.mask.thickness / 2) * height));
+      const botY = Math.min(height, Math.round((tools.mask.posY + tools.mask.thickness / 2) * height));
+      const bandH = Math.max(10, botY - topH);
+      const safeTopH = topH - (topH % 2);
+      const safeBandH = bandH - (bandH % 2);
+      const bgLabel = `bg_${++step}`;
+      const fgLabel = `fg_${++step}`;
+      const nextLabel = `v_${++step}`;
+      filterChains.push(`[${currentLabel}]scale=1080*${bgZoom}:1920*${bgZoom}:force_original_aspect_ratio=increase,crop=1080:1920,avgblur=sizeX=25:sizeY=25[${bgLabel}]`);
+      filterChains.push(`[${currentLabel}]crop=1080:${safeBandH}:0:${safeTopH}[${fgLabel}]`);
+      filterChains.push(`[${bgLabel}][${fgLabel}]overlay=0:${safeTopH}[${nextLabel}]`);
+      currentLabel = nextLabel;
+    }
   }
 
   // 5. Burn subtitles & Title ON TOP of all blur and video filters
-  const hasCaptions = tools.captions && tools.captions.enabled && captionsWords && captionsWords.length > 0;
+  const hasCaptions = tools.captions && tools.captions.enabled !== false && captionsWords && captionsWords.length > 0;
   const clipTitle = title || tools.title || '';
   if (hasCaptions || clipTitle) {
     const captionService = require('./captionService');

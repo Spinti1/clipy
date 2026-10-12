@@ -83,7 +83,8 @@ describe('YouTube Real Download Integration in Pipeline', () => {
       body: JSON.stringify({ tools: { mirror: false, blur: [], mask: { enabled: false } } })
     });
     const expData = await expRes.json();
-    assert.equal(expData.exp.url, finishedJob.result.video);
+    assert.ok(expData.exp.url.startsWith('/files/'));
+    assert.ok(expData.exp.url.endsWith('.mp4'));
 
     // 7. Verify extracted & translated subtitles contain the real video content
     const capRes = await fetch(`${baseUrl}/api/jobs/${jobId}/captions`);

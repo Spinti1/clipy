@@ -275,30 +275,24 @@ async function exportJob(jobId, tools = {}) {
     }
   }
 
-  const captionsWords = (job.captions && job.captions.words) ? job.captions.words : [];
+  // Ensure captions words are present from frontend payload or job or getCaptions
+  let captionsWords = (tools && Array.isArray(tools.captionsWords) && tools.captionsWords.length > 0)
+    ? tools.captionsWords
+    : ((job.captions && job.captions.words && job.captions.words.length > 0) ? job.captions.words : []);
 
-  const hasFilters = Boolean(
-    tools.mirror ||
-    (Array.isArray(tools.blur) && tools.blur.length > 0) ||
-    (tools.mask && tools.mask.enabled) ||
-    (tools.captions && tools.captions.enabled && captionsWords && captionsWords.length > 0)
-  );
-
-  if (!hasFilters) {
-    const sig = 'exp_' + crypto.randomBytes(6).toString('hex');
-    const exp = {
-      sig,
-      state: 'done',
-      progress: 100,
-      status: 'Gata pentru descărcare',
-      url: (job.result && job.result.video) || '/assets/sample.mp4'
-    };
-    job.exp = exp;
-    return { ok: true, exp };
+  if (!captionsWords || captionsWords.length === 0) {
+    try {
+      const capData = getCaptions(jobId);
+      if (capData && capData.words) {
+        captionsWords = capData.words;
+        job.captions = capData;
+      }
+    } catch (_) {}
   }
 
+  const clipTitle = (tools && tools.title) || (job.result && job.result.title) || 'Secretul pentru conținut viral ⚡';
+
   let exportResult;
-  const clipTitle = (job.result && job.result.title) || (tools && tools.title) || 'Secretul pentru conținut viral ⚡';
   try {
     exportResult = await videoDownloader.exportProcessedVideo({
       videoPath,

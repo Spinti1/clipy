@@ -10,3 +10,4 @@ cloudflared.exe
 
 .vercel
 .env*
+scratch/

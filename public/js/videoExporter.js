@@ -14,7 +14,10 @@
             try {
                 toast('Randez videoclipul MP4 HD cu subtitrări și efecte... ⏳');
 
-                const toolsWithTitle = Object.assign({}, c.tools, { title: jobTitle });
+                const toolsWithTitle = Object.assign({}, c.tools, {
+                    title: jobTitle,
+                    captionsWords: (c.captionsData && c.captionsData.words) || []
+                });
                 const res = await api(`/api/jobs/${c.job.jobId}/export`, {
                     method: 'POST',
                     body: { tools: toolsWithTitle }
