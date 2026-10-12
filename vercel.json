@@ -1,17 +1,3 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/api/config",
-      "destination": "/api/config.json"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "https://biol-slight-hammer-spears.trycloudflare.com/api/$1"
-    },
-    {
-      "source": "/files/(.*)",
-      "destination": "https://biol-slight-hammer-spears.trycloudflare.com/files/$1"
-    }
-  ]
+  "cleanUrls": true
 }
