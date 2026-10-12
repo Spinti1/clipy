@@ -457,7 +457,7 @@ const PRESET_STYLES = {
 /**
  * Generates an ASS subtitle script with real-time active-word karaoke highlighting
  */
-function generateAssScript({ groups, width, height, capTools }) {
+function generateAssScript({ groups, width, height, capTools, title, duration = 600 }) {
   const cap = capTools || {};
   const presetKey = cap.preset || 'clasic';
   const preset = PRESET_STYLES[presetKey] || PRESET_STYLES.clasic;
@@ -485,10 +485,22 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,${fontName},${fontSize},${normalColor},${activeColor},${outlineColor},${shadowColor},-1,0,0,0,100,100,1,0,1,${preset.outline},${preset.shadow},2,30,30,${marginV},1
-
-[Events]
-Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `;
+
+  if (title) {
+    const titleSize = Math.max(32, Math.round(width * 0.052));
+    const titleMarginV = Math.max(40, Math.round(height * 0.045));
+    ass += `Style: TitleHeader,${fontName},${titleSize},&H00FFFFFF&,&H00FFFFFF&,&H00000000&,&H80000000&,-1,0,0,0,100,100,0,0,1,3.5,1.5,8,30,30,${titleMarginV},1\n`;
+  }
+
+  ass += `\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+
+  if (title) {
+    const cleanTitle = String(title).replace(/[\r\n]+/g, ' ').trim();
+    const titleText = isUpper ? cleanTitle.toUpperCase() : cleanTitle;
+    const endT = Math.max(duration || 60, 600);
+    ass += `Dialogue: 1,0:00:00.00,${formatAssTime(endT)},TitleHeader,,0,0,0,,{\\b1}${titleText}{\\b0}\n`;
+  }
 
   if (Array.isArray(groups)) {
     groups.forEach((g) => {
@@ -520,9 +532,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 }
 
 /**
- * Renders an exported MP4 with tools (mirror, mask, blur, subtitles) burned in using ffmpeg
+ * Renders an exported MP4 with tools (mirror, mask, blur, subtitles, title) burned in using ffmpeg
  */
-async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [], outputPath }) {
+async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [], title = '', outputPath }) {
   const ffmpeg = getFfmpegPath();
   const filesDir = path.join(__dirname, '..', 'data', 'files');
   if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true });
@@ -534,22 +546,43 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
   const dest = outputPath || path.join(filesDir, `export_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.mp4`);
 
   const probe = await probeVideo(resolvedVideo);
-  const width = probe.width || 720;
-  const height = probe.height || 1280;
+  const srcW = probe.width || 720;
+  const srcH = probe.height || 1280;
+  const dur = probe.duration || 60;
+
+  // Standardize canvas to crisp 9:16 vertical (1080x1920)
+  const isVertical = (srcH / srcW) >= 1.5;
+  const width = 1080;
+  const height = 1920;
 
   let assPath = null;
   const filterChains = [];
   let currentLabel = '0:v';
   let step = 0;
 
-  // 1. Horizontal Mirror
+  // 1. Layout normalization: if horizontal, add blurred background to fill 1080x1920 and center sharp video
+  if (!isVertical) {
+    const bgLabel = `bg_${++step}`;
+    const fgLabel = `fg_${++step}`;
+    const baseLabel = `v_${++step}`;
+    filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,avgblur=sizeX=25:sizeY=25[${bgLabel}]`);
+    filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=decrease[${fgLabel}]`);
+    filterChains.push(`[${bgLabel}][${fgLabel}]overlay=(W-w)/2:(H-h)/2[${baseLabel}]`);
+    currentLabel = baseLabel;
+  } else if (srcW !== width || srcH !== height) {
+    const scaleLabel = `v_${++step}`;
+    filterChains.push(`[${currentLabel}]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black[${scaleLabel}]`);
+    currentLabel = scaleLabel;
+  }
+
+  // 2. Horizontal Mirror
   if (tools.mirror) {
     const nextLabel = `v_${++step}`;
     filterChains.push(`[${currentLabel}]hflip[${nextLabel}]`);
     currentLabel = nextLabel;
   }
 
-  // 2. Blur bounding boxes (applied on video BEFORE subtitles so subtitles are OVER blur)
+  // 3. Blur bounding boxes (applied on video BEFORE subtitles so subtitles are OVER blur)
   if (Array.isArray(tools.blur) && tools.blur.length > 0) {
     for (const b of tools.blur) {
       let bx = Math.max(0, Math.min(width - 4, Math.round((b.x / 100) * width)));
@@ -567,15 +600,16 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
       const splitCrop = `sp_crop_${step}`;
       const blurred = `blur_${step}`;
       const nextLabel = `v_${++step}`;
+      const blurRadius = Math.max(3, Math.min(25, Math.floor(Math.min(bw, bh) / 3)));
 
       filterChains.push(`[${currentLabel}]split[${splitBase}][${splitCrop}]`);
-      filterChains.push(`[${splitCrop}]crop=${bw}:${bh}:${bx}:${by},boxblur=15:5[${blurred}]`);
+      filterChains.push(`[${splitCrop}]crop=${bw}:${bh}:${bx}:${by},avgblur=sizeX=${blurRadius}:sizeY=${blurRadius}[${blurred}]`);
       filterChains.push(`[${splitBase}][${blurred}]overlay=${bx}:${by}[${nextLabel}]`);
       currentLabel = nextLabel;
     }
   }
 
-  // 3. Mask band
+  // 4. Mask band
   if (tools.mask && tools.mask.enabled && tools.mask.blackBg) {
     const topH = Math.max(1, Math.round(Math.max(0, (tools.mask.posY - tools.mask.thickness / 2) * height)));
     const botY = Math.min(height - 1, Math.round(Math.min(height, (tools.mask.posY + tools.mask.thickness / 2) * height)));
@@ -586,28 +620,30 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
     currentLabel = nextLabel2;
   }
 
-  // 4. Burn subtitles ON TOP of all blur and video filters
-  if (tools.captions && tools.captions.enabled && captionsWords && captionsWords.length > 0) {
+  // 5. Burn subtitles & Title ON TOP of all blur and video filters
+  const hasCaptions = tools.captions && tools.captions.enabled && captionsWords && captionsWords.length > 0;
+  const clipTitle = title || tools.title || '';
+  if (hasCaptions || clipTitle) {
     const captionService = require('./captionService');
-    const groups = captionService.wordsToGroups(captionsWords, tools.captions.per || 4);
-    if (groups && groups.length > 0) {
-      assPath = path.join(filesDir, `sub_${Date.now()}_${crypto.randomBytes(3).toString('hex')}.ass`);
-      const assScript = generateAssScript({
-        groups,
-        width,
-        height,
-        capTools: tools.captions
-      });
-      fs.writeFileSync(assPath, assScript, 'utf8');
+    const groups = hasCaptions ? captionService.wordsToGroups(captionsWords, tools.captions.per || 4) : [];
+    assPath = path.join(filesDir, `sub_${Date.now()}_${crypto.randomBytes(3).toString('hex')}.ass`);
+    const assScript = generateAssScript({
+      groups,
+      width,
+      height,
+      capTools: tools.captions,
+      title: clipTitle,
+      duration: dur
+    });
+    fs.writeFileSync(assPath, assScript, 'utf8');
 
-      // Use relative paths to prevent Windows colon parsing issues in ffmpeg
-      const relAss = path.relative(process.cwd(), assPath).replace(/\\/g, '/');
-      const relFonts = path.relative(process.cwd(), path.join(__dirname, '..', 'public', 'fonts')).replace(/\\/g, '/');
+    // Use relative paths to prevent Windows colon parsing issues in ffmpeg
+    const relAss = path.relative(process.cwd(), assPath).replace(/\\/g, '/');
+    const relFonts = path.relative(process.cwd(), path.join(__dirname, '..', 'public', 'fonts')).replace(/\\/g, '/');
 
-      const nextLabel = `v_${++step}`;
-      filterChains.push(`[${currentLabel}]subtitles='${relAss}':fontsdir='${relFonts}'[${nextLabel}]`);
-      currentLabel = nextLabel;
-    }
+    const nextLabel = `v_${++step}`;
+    filterChains.push(`[${currentLabel}]subtitles='${relAss}':fontsdir='${relFonts}'[${nextLabel}]`);
+    currentLabel = nextLabel;
   }
 
   return new Promise((resolve) => {
@@ -621,9 +657,11 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
         '-map', `[${currentLabel}]`,
         '-map', '0:a?',
         '-c:v', 'libx264',
-        '-preset', 'veryfast',
-        '-crf', '22',
-        '-c:a', 'copy',
+        '-preset', 'fast',
+        '-crf', '19',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-b:a', '192k',
         '-movflags', '+faststart',
         dest
       ];
@@ -631,7 +669,11 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
       args = [
         '-y',
         '-i', resolvedVideo,
-        '-c', 'copy',
+        '-c:v', 'libx264',
+        '-crf', '19',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-b:a', '192k',
         '-movflags', '+faststart',
         dest
       ];
@@ -642,7 +684,7 @@ async function exportProcessedVideo({ videoPath, tools = {}, captionsWords = [],
 
     const timer = setTimeout(() => {
       try { proc.kill(); } catch (_) {}
-    }, 90000);
+    }, 120000);
 
     proc.stderr.on('data', d => { stderr += d; });
 

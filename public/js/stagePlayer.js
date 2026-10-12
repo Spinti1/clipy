@@ -18,6 +18,9 @@
                         <button type="button" data-a="layer" data-lay="blur"><i class="fa-solid fa-droplet"></i> Blur</button>
                         <button type="button" data-a="layer" data-lay="text" class="on"><i class="fa-solid fa-closed-captioning"></i> Text</button>
                     </div>
+                    <div class="stage-title-overlay">
+                        <span class="stage-title-pill"><i class="fa-solid fa-sparkles"></i> <span>${esc(r.title || 'Clip Viral ⚡')}</span></span>
+                    </div>
                     <video class="cta-prev" playsinline preload="none" hidden></video>
                     <button class="big-play" data-a="play"><i class="fa-solid fa-play"></i></button>
                 </div>

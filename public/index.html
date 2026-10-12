@@ -410,6 +410,10 @@ function upsertCard(j) {
             <span class="job-meta">${esc(j.voiceLabel)} · ${fmtX(j.speed)}× · ${esc(j.langShort)}</span>
             <button class="icon-btn" data-a="dismiss" title="Scoate din listă"><i class="fa-solid fa-xmark"></i></button>
         </div>
+        <div class="job-title-bar" ${(j.result && j.result.title) ? '' : 'hidden'}>
+            <span class="title-tag"><i class="fa-solid fa-bolt"></i> Titlu Clip</span>
+            <span class="title-val">${esc((j.result && j.result.title) || '')}</span>
+        </div>
         <div class="job-progress">
             <div class="steps">${STEPS.map(s => `<div class="step" data-s="${s.key}"><i class="bar"></i><span>${s.label}</span></div>`).join('')}</div>
             <div class="job-status"><span class="st-txt">${esc(j.status)}</span><span class="st-pct mono">${j.progress}%</span></div>
@@ -436,6 +440,15 @@ function updateCard(c) {
     $('.job-progress', el).hidden = ok && !!j.result;
     $('.st-txt', el).textContent = j.status || '';
     $('.st-pct', el).textContent = j.done ? '' : `${j.progress || 0}%`;
+
+    if (j.result && j.result.title) {
+        const tb = $('.job-title-bar', el);
+        if (tb) {
+            tb.hidden = false;
+            const tv = $('.title-val', tb);
+            if (tv) tv.textContent = j.result.title;
+        }
+    }
 
     if (ok && j.result && !c.built) {
         StagePlayer.buildBody(c);

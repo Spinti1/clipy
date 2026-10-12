@@ -298,16 +298,19 @@ async function exportJob(jobId, tools = {}) {
   }
 
   let exportResult;
+  const clipTitle = (job.result && job.result.title) || (tools && tools.title) || 'Secretul pentru conținut viral ⚡';
   try {
     exportResult = await videoDownloader.exportProcessedVideo({
       videoPath,
       tools,
-      captionsWords
+      captionsWords,
+      title: clipTitle
     });
   } catch (err) {
     console.warn('[jobPipeline] exportJob error:', err.message);
     exportResult = {
       ok: true,
+      filePath: videoPath,
       videoUrl: (job.result && job.result.video) || '/assets/sample.mp4'
     };
   }
@@ -318,6 +321,8 @@ async function exportJob(jobId, tools = {}) {
     state: 'done',
     progress: 100,
     status: 'Gata pentru descărcare',
+    title: clipTitle,
+    filePath: exportResult.filePath,
     url: (exportResult && exportResult.videoUrl) || (job.result && job.result.video) || '/assets/sample.mp4'
   };
   job.exp = exp;

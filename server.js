@@ -2,6 +2,7 @@ require('./src/envConfig');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
@@ -10,6 +11,18 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/files/:filename', (req, res, next) => {
+  const filename = path.basename(req.params.filename);
+  const filePath = path.join(__dirname, 'data', 'files', filename);
+  if (!fs.existsSync(filePath)) return next();
+  if (req.query.download === '1' || req.query.dl === '1') {
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.sendFile(path.resolve(filePath));
+  }
+  next();
+});
 app.use('/files', express.static(path.join(__dirname, 'data', 'files')));
 
 // Exact configuration from speed.viralio.ro
@@ -253,6 +266,25 @@ app.post('/api/jobs/:id/export', async (req, res) => {
     console.error('EXPORT ROUTE ERROR:', err);
     res.status(err.status || 500).json({ ok: false, error: err.message });
   }
+});
+
+app.get('/api/jobs/:id/download', (req, res) => {
+  const job = jobPipeline.jobsStore.get(req.params.id);
+  if (!job) return res.status(404).send('Job inexistent');
+  let filePath = (job.exp && job.exp.filePath) || job.filePath;
+  if (!filePath || !fs.existsSync(filePath)) {
+    if (job.result && job.result.video && job.result.video.startsWith('/files/')) {
+      filePath = path.join(__dirname, 'data', 'files', path.basename(job.result.video));
+    }
+  }
+  if (!filePath || !fs.existsSync(filePath)) {
+    filePath = path.join(__dirname, 'public', 'assets', 'sample.mp4');
+  }
+  const rawTitle = (job.exp && job.exp.title) || (job.result && job.result.title) || 'clipy_export';
+  const cleanTitle = rawTitle.replace(/[^\w\s\-\.]/gi, '_').replace(/\s+/g, '_').slice(0, 60) || 'clipy_export';
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Disposition', `attachment; filename="${cleanTitle}.mp4"`);
+  res.sendFile(path.resolve(filePath));
 });
 
 app.post('/api/jobs/:id/post-text', (req, res) => {
