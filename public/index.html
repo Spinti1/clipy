@@ -245,7 +245,11 @@ if (storedBackend.includes('loca.lt')) {
 }
 
 const DEFAULT_REMOTE_BACKEND = 'https://small-favour-explore-interventions.trycloudflare.com';
-let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || (window.location.hostname.includes('vercel.app') ? DEFAULT_REMOTE_BACKEND : '');
+let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || (
+    (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+        ? DEFAULT_REMOTE_BACKEND
+        : ''
+);
 if (API_BASE) API_BASE = API_BASE.replace(/\/+$/, '');
 
 function resolveUrl(path) {
