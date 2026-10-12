@@ -7,3 +7,6 @@ public/assets/merged_*.mp4
 .env
 .vercel
 cloudflared.exe
+
+.vercel
+.env*

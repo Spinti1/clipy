@@ -322,7 +322,7 @@ app.post('/api/ultra/tiktok-info', (req, res) => {
 
 function startServer(port = 3000) {
   return new Promise((resolve, reject) => {
-    const server = app.listen(port, () => {
+    const server = app.listen(port, '0.0.0.0', () => {
       resolve(server);
     }).on('error', reject);
   });

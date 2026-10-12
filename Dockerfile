@@ -1,6 +1,6 @@
 FROM node:20-bullseye-slim
 
-# Install system dependencies: Python3, pip, ffmpeg
+# Install system dependencies: Python3, pip, ffmpeg, curl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
@@ -23,7 +23,7 @@ COPY . .
 # Ensure data directory exists
 RUN mkdir -p data/files
 
-ENV PORT=3000
-EXPOSE 3000
+ENV PORT=10000
+EXPOSE 10000
 
 CMD ["node", "server.js"]

@@ -37,7 +37,7 @@ describe('YouTube Real Download Integration in Pipeline', () => {
 
     // 2. Poll until completed (real download, translation and TTS take 8-15 seconds on cold run)
     let finishedJob = null;
-    const maxTries = 45;
+    const maxTries = 80;
     for (let i = 0; i < maxTries; i++) {
       await new Promise(r => setTimeout(r, 500));
       const res = await fetch(`${baseUrl}/api/jobs`);

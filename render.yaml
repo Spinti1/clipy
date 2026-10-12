@@ -1,13 +1,11 @@
 services:
   - type: web
     name: clipy-backend
-    env: docker
-    dockerfilePath: Dockerfile
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     plan: free
     region: frankfurt
     healthCheckPath: /api/health
     envVars:
       - key: PORT
-        value: 3000
-      - key: GEMINI_API_KEY
-        sync: false
+        value: 10000

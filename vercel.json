@@ -7,11 +7,11 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://restoration-remember-noted-cancellation.trycloudflare.com/api/$1"
+      "destination": "https://abs-terrace-station-guests.trycloudflare.com/api/$1"
     },
     {
       "source": "/files/(.*)",
-      "destination": "https://restoration-remember-noted-cancellation.trycloudflare.com/files/$1"
+      "destination": "https://abs-terrace-station-guests.trycloudflare.com/files/$1"
     }
   ]
 }
