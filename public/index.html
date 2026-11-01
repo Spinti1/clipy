@@ -63,15 +63,70 @@
 
         <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.1);"></div>
 
-        <!-- Aspect Ratio Switcher -->
-        <button class="clipy-btn" id="studioAspectBtn" style="background: #1a1c26; border-color: rgba(255,255,255,0.1); padding: 5px 12px; gap: 8px;" title="Switch video aspect ratio">
-            <svg id="aspectRatioIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                <line x1="12" y1="18" x2="12.01" y2="18"></line>
-            </svg>
-            <span id="aspectRatioLabel" style="font-weight: 700; color: #fff;">9:16</span>
-            <span id="aspectRatioSub" style="color: #94a3b8; font-weight: 500; font-size: 0.72rem;">Vertical</span>
-        </button>
+        <!-- Aspect Ratio Switcher with Format Menu -->
+        <div style="position: relative;" id="aspectRatioDropdownWrap">
+            <button class="clipy-btn" id="studioAspectBtn" style="background: #1a1c26; border-color: rgba(255,255,255,0.1); padding: 5px 12px; gap: 8px;" title="Choose Video Canvas Resolution & Format">
+                <svg id="aspectRatioIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+                <span id="aspectRatioLabel" style="font-weight: 700; color: #fff;">9:16</span>
+                <span id="aspectRatioSub" style="color: #94a3b8; font-weight: 500; font-size: 0.72rem;">Vertical</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;">
+                    <path d="m6 9 6 6 6-6"></path>
+                </svg>
+            </button>
+
+            <!-- Dropdown Menu of all Resolutions & Formats -->
+            <div id="aspectRatioMenu" class="studio-dropdown-menu" hidden style="position: absolute; top: calc(100% + 6px); left: 0; width: 260px; background: #161822; border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; padding: 6px; box-shadow: 0 16px 40px rgba(0,0,0,0.7); z-index: 100;">
+                <div style="padding: 6px 10px 4px; font-size: 0.64rem; font-weight: 700; color: #8e95a5; text-transform: uppercase; letter-spacing: 0.05em;">Canvas Formats & Resolutions</div>
+                
+                <button type="button" class="aspect-option-item active" data-ratio="9:16" data-label="Vertical" data-cls="aspect-9-16">
+                    <div class="aspect-icon-box vertical"></div>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #fff;">9:16 Vertical</div>
+                        <div style="font-size: 0.65rem; color: #94a3b8;">1080 × 1920 · TikTok, Shorts, Reels</div>
+                    </div>
+                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+
+                <button type="button" class="aspect-option-item" data-ratio="16:9" data-label="Widescreen" data-cls="aspect-16-9">
+                    <div class="aspect-icon-box widescreen"></div>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #fff;">16:9 Widescreen</div>
+                        <div style="font-size: 0.65rem; color: #94a3b8;">1920 × 1080 · YouTube, TV, Desktop</div>
+                    </div>
+                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+
+                <button type="button" class="aspect-option-item" data-ratio="1:1" data-label="Square" data-cls="aspect-1-1">
+                    <div class="aspect-icon-box square"></div>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #fff;">1:1 Square</div>
+                        <div style="font-size: 0.65rem; color: #94a3b8;">1080 × 1080 · Instagram, Facebook</div>
+                    </div>
+                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+
+                <button type="button" class="aspect-option-item" data-ratio="4:5" data-label="Portrait" data-cls="aspect-4-5">
+                    <div class="aspect-icon-box portrait"></div>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #fff;">4:5 Portrait</div>
+                        <div style="font-size: 0.65rem; color: #94a3b8;">1080 × 1350 · Social Media Feed</div>
+                    </div>
+                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+
+                <button type="button" class="aspect-option-item" data-ratio="21:9" data-label="Cinematic" data-cls="aspect-21-9">
+                    <div class="aspect-icon-box cinematic"></div>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #fff;">21:9 Cinematic</div>
+                        <div style="font-size: 0.65rem; color: #94a3b8;">2560 × 1080 · Ultrawide Movie</div>
+                    </div>
+                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+            </div>
+        </div>
 
         <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.1);"></div>
 
@@ -128,27 +183,28 @@
     <!-- Middle Workspace: Ribbon (60px) | Drawer (280px) | Cinema Canvas | Inspector (250px) -->
     <div style="flex: 1; display: flex; min-height: 0; background: #0c0d12; overflow: hidden;">
         
-        <!-- 1. Far Left Icon Ribbon (60px) -->
+        <!-- 1. Left Icon Ribbon (76px) -->
         <nav class="studio-rail" id="studioRail">
-            <!-- Tab: Quick Generator (Adapted Legacy Section - Default Active) -->
-            <button class="rail-btn active" data-tab="rapid" title="Generator & Importer">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-                <span class="rail-label">Generator</span>
-            </button>
-
             <!-- Tab: Media -->
-            <button class="rail-btn" data-tab="media" title="Media & Video Library">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="rail-btn active" data-tab="media" title="Media & Video Files">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span class="rail-label">Media</span>
             </button>
 
+            <!-- Tab: Crop & Fit -->
+            <button class="rail-btn" data-tab="crop" title="Visual Crop, Zoom & Framing">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
+                    <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
+                </svg>
+                <span class="rail-label">Crop/Fit</span>
+            </button>
+
             <!-- Tab: Subtitles -->
             <button class="rail-btn" data-tab="subtitles" title="Subtitles & Karaoke Presets">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="4" width="20" height="16" rx="3"></rect>
                     <path d="M7 15h3a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H7v6Z"></path>
                     <path d="M15 15h3a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-3v6Z"></path>
@@ -158,7 +214,7 @@
 
             <!-- Tab: Masks & Blur -->
             <button class="rail-btn" data-tab="masks" title="Masks & Blur Privacy Boxes">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="m4.93 4.93 14.14 14.14"></path>
                 </svg>
@@ -166,8 +222,8 @@
             </button>
 
             <!-- Tab: Audio -->
-            <button class="rail-btn" data-tab="audio" title="Audio Tracks & Neural Dubbing">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="rail-btn" data-tab="audio" title="Audio Tracks & Volume">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2v20"></path>
                     <path d="M17 5v14"></path>
                     <path d="M7 8v8"></path>
@@ -178,8 +234,8 @@
             </button>
 
             <!-- Tab: AI Tools -->
-            <button class="rail-btn" data-tab="ai" title="AI Video Magic Tools">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="rail-btn" data-tab="ai" title="AI Smart Tools">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
                     <path d="M5 3v4"></path>
                     <path d="M19 17v4"></path>
@@ -192,14 +248,78 @@
 
         <!-- 2. Expandable Flyout Drawer (280px) -->
         <aside class="studio-drawer" id="studioDrawer">
-            <!-- TAB 1: QUICK GENERATOR (Target for SetupBox Container - Open by default) -->
-            <div id="drawerTabRapid" class="drawer-tab-view">
+            <!-- TAB 1: MEDIA LIBRARY (Default open) -->
+            <div id="drawerTabMedia" class="drawer-tab-view">
                 <div class="drawer-header">
-                    <span>Quick Generator</span>
-                    <span style="font-size: 0.62rem; font-weight: 700; color: #10b981;">ONLINE</span>
+                    <span>Media Library</span>
+                    <button class="clipy-btn" style="padding: 2px 8px; font-size: 0.68rem; background: #7c3aed; color: #fff; border: none;" onclick="$('#fileInput').click()">+ Upload</button>
                 </div>
-                <div class="drawer-content" id="rapidContentMount" style="padding: 10px;">
-                    <!-- Mounted dynamically from setupBoxContainer -->
+                <div class="drawer-content">
+                    <!-- Dropzone -->
+                    <div id="studioDropzone" style="background: rgba(255,255,255,0.02); border: 1.5px dashed rgba(255,255,255,0.12); border-radius: 8px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 10px;" onclick="$('#fileInput').click()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #f1f5f9;">Upload Video File</div>
+                        <div style="font-size: 0.65rem; color: #71788e; margin-top: 2px;">MP4, MOV, WebM, MKV</div>
+                    </div>
+
+                    <button class="clipy-btn" style="justify-content: center; width: 100%;" onclick="loadSampleVideoIntoStudio()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span>Load Sample HD Video</span>
+                    </button>
+                    <div style="font-size: 0.68rem; color: #71788e; text-align: center; margin-top: 8px;">
+                        Import videos to edit, trim, split, and export them directly in your browser.
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: CROP & TRANSFORM -->
+            <div id="drawerTabCrop" class="drawer-tab-view" hidden>
+                <div class="drawer-header">
+                    <span>Crop & Framing</span>
+                </div>
+                <div class="drawer-content" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase;">Fit / Crop Mode</label>
+                        <div style="display: flex; gap: 6px; margin-top: 6px;">
+                            <button type="button" class="clipy-btn active" id="btnDrawerFit" style="flex: 1; justify-content: center;" onclick="setVideoFitMode('contain')">Fit to Screen</button>
+                            <button type="button" class="clipy-btn" id="btnDrawerCover" style="flex: 1; justify-content: center;" onclick="setVideoFitMode('cover')">Crop to Fill</button>
+                        </div>
+                        <p style="font-size: 0.65rem; color: #94a3b8; margin: 4px 0 0; line-height: 1.35;">
+                            "Crop to Fill" crops side or top bars so the video fills the canvas format.
+                        </p>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
+                            <span style="font-weight: 600;">Zoom & Crop Subject</span>
+                            <span class="mono-code" id="drawerZoomVal" style="color: #a78bfa; font-weight: 700;">1.0×</span>
+                        </div>
+                        <input type="range" class="pro-slider" id="drawerZoomSlider" min="1" max="2.5" step="0.05" value="1" oninput="setVideoZoom(this.value)">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase;">Pan & Position (Drag on video)</label>
+                        <div style="display: flex; gap: 6px; margin-top: 6px;">
+                            <button type="button" class="clipy-btn" style="flex: 1; justify-content: center;" onclick="resetVideoPan()">Reset Position</button>
+                        </div>
+                        <p style="font-size: 0.65rem; color: #94a3b8; margin: 4px 0 0; line-height: 1.35;">
+                            When zoomed or cropped, drag the video directly with your mouse to center the subject.
+                        </p>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                        <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase;">Orientation</label>
+                        <div style="display: flex; gap: 6px; margin-top: 6px;">
+                            <button type="button" class="clipy-btn" style="flex: 1; justify-content: center;" onclick="toggleStudioMirror()">Mirror Flip</button>
+                            <button type="button" class="clipy-btn" style="flex: 1; justify-content: center;" onclick="rotateVideo90()">Rotate 90°</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -264,35 +384,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: MEDIA -->
-            <div id="drawerTabMedia" class="drawer-tab-view" hidden>
-                <div class="drawer-header">
-                    <span>Media Library</span>
-                    <button class="clipy-btn" style="padding: 2px 8px; font-size: 0.68rem; background: #7c3aed; color: #fff; border: none;" onclick="$('#fileInput').click()">+ Upload</button>
-                </div>
-                <div class="drawer-content">
-                    <!-- Dropzone -->
-                    <div id="studioDropzone" style="background: rgba(255,255,255,0.02); border: 1.5px dashed rgba(255,255,255,0.12); border-radius: 8px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 10px;" onclick="$('#fileInput').click()">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px;">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <div style="font-size: 0.78rem; font-weight: 700; color: #f1f5f9;">Upload Video File</div>
-                        <div style="font-size: 0.65rem; color: #71788e; margin-top: 2px;">MP4, MOV, WebM, MKV</div>
-                    </div>
 
-                    <button class="clipy-btn" style="justify-content: center; width: 100%;" onclick="loadSampleVideoIntoStudio()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                        <span>Load Sample HD Video</span>
-                    </button>
-                    <div style="font-size: 0.68rem; color: #71788e; text-align: center; margin-top: 8px;">
-                        Processed videos will automatically appear in your media library.
-                    </div>
-                </div>
-            </div>
 
             <!-- TAB 4: SUBTITLES -->
             <div id="drawerTabSubs" class="drawer-tab-view" hidden>
@@ -332,18 +424,26 @@
                 </div>
             </div>
 
-            <!-- TAB 6: AUDIO -->
+            <!-- TAB 5: AUDIO -->
             <div id="drawerTabAudio" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
-                    <span>Audio & Dubbing Mix</span>
+                    <span>Audio & Volume</span>
                 </div>
-                <div class="drawer-content">
+                <div class="drawer-content" style="display: flex; flex-direction: column; gap: 14px;">
                     <div>
                         <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                            <span>AI Dubbed Voice Volume</span>
-                            <span class="mono-code" id="dubVolVal">100%</span>
+                            <span style="font-weight: 600;">Original Video Volume</span>
+                            <span class="mono-code" id="drawerVidVolVal" style="color: #a78bfa; font-weight: 700;">100%</span>
                         </div>
-                        <input type="range" class="pro-slider" min="0" max="1" step="0.05" value="1" oninput="$('#dubVolVal').textContent = Math.round(this.value*100)+'%'">
+                        <input type="range" class="pro-slider" id="drawerVidVolSlider" min="0" max="1" step="0.05" value="1" oninput="setVideoVolume(this.value)">
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
+                            <span style="font-weight: 600;">AI Dubbed Voice Volume</span>
+                            <span class="mono-code" id="dubVolVal" style="color: #a78bfa; font-weight: 700;">100%</span>
+                        </div>
+                        <input type="range" class="pro-slider" id="drawerDubVolSlider" min="0" max="1" step="0.05" value="1" oninput="setDubbingVolume(this.value)">
                     </div>
                 </div>
             </div>
@@ -351,8 +451,33 @@
 
         <!-- 3. Center Cinema Canvas -->
         <main class="studio-canvas" id="studioCanvasArea">
+            <!-- Floating Canvas Toolbar: Fit, Crop/Fill, Zoom & Rotate -->
+            <div class="studio-canvas-toolbar" id="studioCanvasToolbar" style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px; background: rgba(22, 24, 33, 0.92); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px 10px; z-index: 20;">
+                <button type="button" class="canvas-tool-btn active" id="btnFitMode" onclick="setVideoFitMode('contain')" title="Fit Entire Video (Keep All Content)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M8 3v18"></path><path d="M16 3v18"></path></svg>
+                    <span>Fit</span>
+                </button>
+                <button type="button" class="canvas-tool-btn" id="btnCropFillMode" onclick="setVideoFitMode('cover')" title="Crop to Fill Frame (Cut Edges / Decupează marginile)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v14a2 2 0 0 0 2 2h14"></path><path d="M18 22V8a2 2 0 0 0-2-2H2"></path></svg>
+                    <span>Crop to Fill</span>
+                </button>
+                <div style="height: 14px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+                <span style="font-size: 0.65rem; color: #8e95a5;">Zoom:</span>
+                <input type="range" class="pro-slider" id="canvasZoomSlider" min="1" max="2.5" step="0.05" value="1" style="width: 65px;" oninput="setVideoZoom(this.value)" title="Zoom / Crop Into Frame">
+                <span id="canvasZoomVal" style="font-size: 0.65rem; color: #cbd5e1; min-width: 26px;">1.0×</span>
+                <div style="height: 14px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+                <button type="button" class="canvas-tool-btn" id="btnCanvasMirror" onclick="toggleStudioMirror()" title="Mirror Flip Video">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path></svg>
+                    <span>Mirror</span>
+                </button>
+                <button type="button" class="canvas-tool-btn" id="btnCanvasRotate" onclick="rotateVideo90()" title="Rotate 90 Degrees">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                    <span>Rotate</span>
+                </button>
+            </div>
+
             <!-- Studio Viewport with aspect ratio -->
-            <div class="studio-viewport aspect-9-16" id="studioViewport">
+            <div class="studio-viewport empty-viewport aspect-9-16" id="studioViewport">
                 <!-- Floating Title Header (hidden initially until video is loaded) -->
                 <div class="studio-title-pill" id="studioTitlePill" style="display: none;">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff">
@@ -362,40 +487,42 @@
                 </div>
 
                 <!-- Video Stage -->
-                <div class="cinema-stage stage" id="cinemaStage" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;">
+                <div class="cinema-stage stage" id="cinemaStage" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: grab;">
                     <div class="flip" id="cinemaFlip" style="position: absolute; inset: 0; width: 100%; height: 100%;">
                         <video class="mask-bg" id="cinemaMaskBg" muted playsinline preload="auto" hidden style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(20px); transform: scale(1.6);"></video>
-                        <video class="main" id="cinemaMainVideo" playsinline preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;"></video>
+                        <video class="main" id="cinemaMainVideo" playsinline preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: transform 0.05s ease-out;"></video>
                     </div>
                     <audio class="voiceover" id="cinemaVoiceover" preload="auto" muted hidden></audio>
                     <div class="boxes" id="cinemaBoxes" style="position: absolute; inset: 0; pointer-events: auto;"></div>
-                    <div class="capview" id="cinemaCapview" style="position: absolute; left: 50%; top: 72%; transform: translate(-50%, -50%); width: 88%; text-align: center; pointer-events: none; z-index: 50;"></div>
+                    <div class="capview" id="cinemaCapview" style="position: absolute; left: 50%; top: 72%; transform: translate(-50%, -50%); width: 88%; text-align: center; pointer-events: auto; z-index: 50; cursor: grab;" title="Click & Drag to reposition subtitles"></div>
                 </div>
 
                 <!-- Empty Project Welcome / Dropzone Overlay -->
                 <div class="studio-empty-state" id="studioEmptyState">
-                    <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(124, 58, 237, 0.16); border: 1.5px dashed rgba(167, 139, 250, 0.5); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; color: #a78bfa;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <div style="width: 56px; height: 56px; border-radius: 14px; background: rgba(124, 58, 237, 0.16); border: 1.5px dashed rgba(167, 139, 250, 0.5); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; color: #a78bfa;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
                     </div>
-                    <h3 style="font-size: 1.02rem; font-weight: 700; color: #f8fafc; margin: 0 0 6px 0;">Start Your Video</h3>
-                    <p style="font-size: 0.74rem; color: #94a3b8; max-width: 250px; margin: 0 0 16px 0; line-height: 1.4;">
-                        Drop any video here, paste a link, or load a sample to start editing.
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0 0 8px 0;">Start Your Video Project</h3>
+                    <p style="font-size: 0.8rem; color: #94a3b8; max-width: 380px; margin: 0 0 20px 0; line-height: 1.45;">
+                        Drag and drop any video file here, paste a video link, or load a sample video to start editing.
                     </p>
-                    <button type="button" class="clipy-btn" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-weight: 700; padding: 8px 18px; font-size: 0.78rem; border-radius: 8px; box-shadow: 0 4px 14px rgba(124,58,237,0.35); cursor: pointer; border: none; margin-bottom: 12px;" onclick="$('#fileInput').click()">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        Upload Video File
-                    </button>
-                    <div style="display: flex; gap: 6px; width: 100%; max-width: 250px; margin-bottom: 12px;">
-                        <input type="text" id="emptyUrlInput" placeholder="Paste video link..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px 10px; font-size: 0.72rem; color: #fff; outline: none;" onkeydown="if(event.key==='Enter') window.importUrlFromEmpty();">
-                        <button type="button" class="clipy-btn" style="padding: 6px 10px; font-size: 0.72rem; font-weight: 600;" onclick="window.importUrlFromEmpty()">Import</button>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+                        <button type="button" class="clipy-btn" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-weight: 700; padding: 9px 22px; font-size: 0.82rem; border-radius: 8px; box-shadow: 0 4px 16px rgba(124,58,237,0.4); cursor: pointer; border: none;" onclick="$('#fileInput').click()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Upload Video File
+                        </button>
+                        <button type="button" class="clipy-btn" style="background: rgba(255,255,255,0.06); padding: 9px 16px; font-size: 0.8rem;" onclick="loadSampleVideoIntoStudio()">
+                            Try Demo Sample
+                        </button>
                     </div>
-                    <button type="button" style="background: transparent; border: none; color: #a78bfa; font-size: 0.7rem; cursor: pointer; text-decoration: underline;" onclick="loadSampleVideoIntoStudio()">
-                        or try Demo Sample Video
-                    </button>
+                    <div style="display: flex; gap: 8px; width: 100%; max-width: 360px;">
+                        <input type="text" id="emptyUrlInput" placeholder="Paste YouTube, TikTok or Instagram link..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 7px 12px; font-size: 0.76rem; color: #fff; outline: none;" onkeydown="if(event.key==='Enter') window.importUrlFromEmpty();">
+                        <button type="button" class="clipy-btn" style="padding: 7px 14px; font-size: 0.76rem; font-weight: 700; background: #7c3aed; color: #fff; border: none;" onclick="window.importUrlFromEmpty()">Import</button>
+                    </div>
                 </div>
 
                 <!-- Active Selection Transform Box -->
@@ -447,14 +574,18 @@
                 <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.1);"></div>
 
                 <!-- Volume & Fullscreen -->
-                <div style="display: flex; align-items: center; gap: 10px; color: #94a3b8;">
-                    <button id="btnStudioVol" style="background: transparent; border: none; color: inherit; cursor: pointer; display: flex; align-items: center;" title="Mute / Unmute">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                        </svg>
-                    </button>
+                <div style="display: flex; align-items: center; gap: 8px; color: #94a3b8;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button id="btnStudioVol" style="background: transparent; border: none; color: inherit; cursor: pointer; display: flex; align-items: center;" title="Mute / Unmute">
+                            <svg id="studioVolIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            </svg>
+                        </button>
+                        <input type="range" class="pro-slider" id="studioMasterVol" min="0" max="1" step="0.05" value="1" style="width: 55px;" oninput="setVideoVolume(this.value)" title="Adjust Video Sound Volume">
+                        <span id="studioVolText" style="font-size: 0.65rem; color: #cbd5e1; min-width: 28px; font-family: 'JetBrains Mono', monospace;">100%</span>
+                    </div>
                     <button id="btnStudioFullscreen" style="background: transparent; border: none; color: inherit; cursor: pointer; display: flex; align-items: center;" title="Fullscreen">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
@@ -519,17 +650,17 @@
             <div class="inspector-body" id="inspectorBodyAudio" hidden>
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                        <span>AI Voice Volume</span>
-                        <span class="mono-code" id="inspDubVol">100%</span>
+                        <span>Original Video Volume</span>
+                        <span class="mono-code" id="inspOrigVol">100%</span>
                     </div>
-                    <input type="range" class="pro-slider" min="0" max="1" step="0.05" value="1" oninput="$('#inspDubVol').textContent = Math.round(this.value*100)+'%'">
+                    <input type="range" class="pro-slider" id="inspOrigVolSlider" min="0" max="1" step="0.05" value="1" oninput="setVideoVolume(this.value)">
                 </div>
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                        <span>Original Video Volume</span>
-                        <span class="mono-code" id="inspOrigVol">0%</span>
+                        <span>AI Voice Volume</span>
+                        <span class="mono-code" id="inspDubVol">100%</span>
                     </div>
-                    <input type="range" class="pro-slider" min="0" max="1" step="0.05" value="0" oninput="$('#inspOrigVol').textContent = Math.round(this.value*100)+'%'">
+                    <input type="range" class="pro-slider" id="inspDubVolSlider" min="0" max="1" step="0.05" value="1" oninput="setDubbingVolume(this.value)">
                 </div>
             </div>
 
@@ -692,11 +823,11 @@
     <section class="panel setup" id="classicSetupPanel" aria-label="Settings">
         <div class="hd">
             <div class="hd-ico">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#072215" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
             <div>
-                <h1>Clipy<span class="ultra-tag" id="ultraTag">Speed</span></h1>
-                <p>Link → AI Dubbed Voice & Synchronized Captions</p>
+                <h1>Clipy Classic Generator<span class="ultra-tag" id="ultraTag">AI Dub & Translate</span></h1>
+                <p>Import ready-made English videos from YouTube or TikTok, translate them into any language, and automatically add synchronized viral captions and neural AI voiceovers.</p>
             </div>
             <span class="cost-pill" id="costPill">100% Free</span>
         </div>
@@ -1253,21 +1384,30 @@ function loadCardIntoStudio(c) {
     const r = c.job.result;
     const mainVid = $('#cinemaMainVideo');
     const maskVid = $('#cinemaMaskBg');
+    const voiceover = $('#cinemaVoiceover');
     const emptyState = $('#studioEmptyState');
     const titlePill = $('#studioTitlePill');
     const titleText = $('#studioTitleText');
     const projectTitle = $('#studioProjectTitle');
+    const vp = $('#studioViewport');
 
     if (emptyState) emptyState.style.display = 'none';
+    if (vp) vp.classList.remove('empty-viewport');
     if (titlePill) titlePill.style.display = 'flex';
 
     if (mainVid) {
         const vidUrl = resolveUrl(r.video);
         if (mainVid.src !== vidUrl) mainVid.src = vidUrl;
+        mainVid.volume = parseFloat($('#studioMasterVol') ? $('#studioMasterVol').value : 1) || 1;
     }
     if (maskVid) {
         const vidUrl = resolveUrl(r.video);
         if (maskVid.src !== vidUrl) maskVid.src = vidUrl;
+    }
+    if (voiceover && r.audio) {
+        voiceover.src = resolveUrl(r.audio);
+        voiceover.hidden = false;
+        voiceover.volume = parseFloat($('#drawerDubVolSlider') ? $('#drawerDubVolSlider').value : 1) || 1;
     }
     if (titleText && r.title) titleText.textContent = r.title;
     if (projectTitle && r.title) projectTitle.value = r.title.replace(/[^\w\s\-\.]/gi, '_').slice(0, 30);
@@ -1285,15 +1425,20 @@ function loadSampleVideoIntoStudio() {
     const titlePill = $('#studioTitlePill');
     const titleText = $('#studioTitleText');
     const projectTitle = $('#studioProjectTitle');
+    const vp = $('#studioViewport');
 
     if (emptyState) emptyState.style.display = 'none';
+    if (vp) vp.classList.remove('empty-viewport');
     if (titlePill) titlePill.style.display = 'flex';
     if (titleText) titleText.textContent = 'Sample HD Video';
     if (projectTitle) projectTitle.value = 'Sample_HD_Video';
 
+    resetVideoPan();
+
     if (mainVid) {
         mainVid.src = '/assets/sample.mp4';
         mainVid.currentTime = 0;
+        mainVid.volume = parseFloat($('#studioMasterVol') ? $('#studioMasterVol').value : 1) || 1;
         mainVid.onloadedmetadata = () => {
             const dur = mainVid.duration || 15.0;
             if (window.Timeline) {
@@ -1306,7 +1451,7 @@ function loadSampleVideoIntoStudio() {
     if (maskVid) {
         maskVid.src = '/assets/sample.mp4';
     }
-    toast('Sample video loaded into Clipy Studio!');
+    toast('Sample HD video loaded into Studio! ⚡');
 }
 
 window.loadLocalVideoIntoStudio = function(fileObj) {
@@ -1317,14 +1462,20 @@ window.loadLocalVideoIntoStudio = function(fileObj) {
     const titlePill = $('#studioTitlePill');
     const titleText = $('#studioTitleText');
     const projectTitle = $('#studioProjectTitle');
+    const vp = $('#studioViewport');
 
     if (emptyState) emptyState.style.display = 'none';
+    if (vp) vp.classList.remove('empty-viewport');
     if (titlePill) titlePill.style.display = 'flex';
     if (titleText) titleText.textContent = fileObj.uploadName;
     if (projectTitle) projectTitle.value = fileObj.uploadName.replace(/\.[^/.]+$/, '').slice(0, 30);
 
+    resetVideoPan();
+
     if (mainVid) {
         mainVid.src = fileObj.url;
+        mainVid.currentTime = 0;
+        mainVid.volume = parseFloat($('#studioMasterVol') ? $('#studioMasterVol').value : 1) || 1;
         mainVid.onloadedmetadata = () => {
             const dur = mainVid.duration || 10.0;
             if (window.Timeline) {
@@ -1344,14 +1495,14 @@ window.importUrlFromEmpty = function() {
     const inp = $('#emptyUrlInput');
     if (!inp || !inp.value.trim()) return;
     const url = inp.value.trim();
-    activateDrawerTab('rapid');
+    switchWorkspaceMode('classic');
     const firstRowInput = $('#urlList .url-input');
     if (firstRowInput) {
         firstRowInput.value = url;
         SetupPanel.refreshRows();
         firstRowInput.focus();
     }
-    toast('Link loaded into Generator! Configure voice & click Generate ⚡');
+    toast('Switched to Classic Generator! Configure translation & click Generate ⚡');
     inp.value = '';
 };
 
@@ -1374,12 +1525,115 @@ function addStudioBlurBox() {
     }
 }
 
+/* ============================================================
+   VIDEO TRANSFORMS (CROP, ZOOM, PAN, ROTATE, MIRROR)
+============================================================ */
+const videoTransform = {
+    fit: 'contain',
+    zoom: 1.0,
+    panX: 0,
+    panY: 0,
+    rotation: 0,
+    mirrored: false
+};
+
+function applyVideoTransforms() {
+    const vid = $('#cinemaMainVideo');
+    if (!vid) return;
+    vid.style.objectFit = videoTransform.fit;
+    const mirrorScale = videoTransform.mirrored ? -1 : 1;
+    vid.style.transform = `translate(${videoTransform.panX}px, ${videoTransform.panY}px) scale(${videoTransform.zoom * mirrorScale}, ${videoTransform.zoom}) rotate(${videoTransform.rotation}deg)`;
+}
+
+function setVideoFitMode(mode) {
+    videoTransform.fit = mode;
+    applyVideoTransforms();
+    const isFit = mode === 'contain';
+    if ($('#btnDrawerFit')) $('#btnDrawerFit').classList.toggle('active', isFit);
+    if ($('#btnDrawerCover')) $('#btnDrawerCover').classList.toggle('active', !isFit);
+    if ($('#btnFitMode')) $('#btnFitMode').classList.toggle('active', isFit);
+    if ($('#btnCropFillMode')) $('#btnCropFillMode').classList.toggle('active', !isFit);
+    toast(isFit ? 'Fit Entire Video (contain)' : 'Crop to Fill Canvas (cover - cuts letterbox)');
+}
+
+function setVideoZoom(val) {
+    const z = Math.max(1.0, Math.min(3.0, parseFloat(val) || 1.0));
+    videoTransform.zoom = z;
+    applyVideoTransforms();
+    const str = z.toFixed(2) + '×';
+    if ($('#zoomDisplayVal')) $('#zoomDisplayVal').textContent = str;
+    if ($('#drawerZoomVal')) $('#drawerZoomVal').textContent = str;
+    const cSlider = $('#canvasZoomSlider');
+    if (cSlider && parseFloat(cSlider.value) !== z) cSlider.value = z;
+    const dSlider = $('#drawerZoomSlider');
+    if (dSlider && parseFloat(dSlider.value) !== z) dSlider.value = z;
+}
+
+function resetVideoPan() {
+    videoTransform.panX = 0;
+    videoTransform.panY = 0;
+    videoTransform.zoom = 1.0;
+    videoTransform.rotation = 0;
+    videoTransform.mirrored = false;
+    setVideoZoom(1.0);
+    applyVideoTransforms();
+    toast('Framing & position reset');
+}
+
+function rotateVideo90() {
+    videoTransform.rotation = (videoTransform.rotation + 90) % 360;
+    applyVideoTransforms();
+    toast(`Rotated to ${videoTransform.rotation}°`);
+}
+
 function toggleStudioMirror() {
-    const flip = $('#cinemaFlip');
-    if (!flip) return;
-    const isMirrored = flip.style.transform === 'scaleX(-1)';
-    flip.style.transform = isMirrored ? '' : 'scaleX(-1)';
-    toast(isMirrored ? 'Mirror flip disabled' : 'Mirror flip enabled');
+    videoTransform.mirrored = !videoTransform.mirrored;
+    applyVideoTransforms();
+    toast(videoTransform.mirrored ? 'Mirror flip enabled' : 'Mirror flip disabled');
+}
+
+/* ============================================================
+   REAL-TIME AUDIO & VOLUME CONTROLS
+============================================================ */
+function setVideoVolume(val) {
+    const v = Math.max(0, Math.min(1, parseFloat(val) || 0));
+    const mainVid = $('#cinemaMainVideo');
+    if (mainVid) {
+        mainVid.volume = v;
+        mainVid.muted = (v === 0);
+    }
+    const pct = Math.round(v * 100) + '%';
+    if ($('#studioVolText')) $('#studioVolText').textContent = pct;
+    if ($('#studioMasterVol')) $('#studioMasterVol').value = v;
+    if ($('#drawerVidVolSlider')) $('#drawerVidVolSlider').value = v;
+    if ($('#drawerVidVolVal')) $('#drawerVidVolVal').textContent = pct;
+    if ($('#inspOrigVolSlider')) $('#inspOrigVolSlider').value = v;
+    if ($('#inspOrigVol')) $('#inspOrigVol').textContent = pct;
+
+    const icon = $('#studioVolIcon');
+    if (icon) {
+        if (v === 0) {
+            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+        } else if (v < 0.5) {
+            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+        } else {
+            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
+        }
+    }
+}
+
+function setDubbingVolume(val) {
+    const v = Math.max(0, Math.min(1, parseFloat(val) || 0));
+    const dub = $('#cinemaVoiceover');
+    if (dub) {
+        dub.volume = v;
+        dub.muted = (v === 0);
+    }
+    const pct = Math.round(v * 100) + '%';
+    if ($('#dubVolVal')) $('#dubVolVal').textContent = pct;
+    if ($('#drawerDubVolSlider')) $('#drawerDubVolSlider').value = v;
+    if ($('#inspDubVolSlider')) $('#inspDubVolSlider').value = v;
+    if ($('#inspDubVol')) $('#inspDubVol').textContent = pct;
 }
 
 // Mode Switcher: Studio Pro vs Classic Generator
@@ -1390,15 +1644,6 @@ function switchWorkspaceMode(mode) {
     $('#btnModeStudio').classList.toggle('active', isStudio);
     $('#btnModeClassic').classList.toggle('active', !isStudio);
     localStorage.setItem('clipy_mode', mode);
-
-    const setupBox = $('#setupBoxContainer');
-    if (isStudio) {
-        const mount = $('#rapidContentMount');
-        if (mount && setupBox) mount.appendChild(setupBox);
-    } else {
-        const mount = $('#classicSetupPanel');
-        if (mount && setupBox) mount.appendChild(setupBox);
-    }
 }
 
 function activateDrawerTab(tabName) {
@@ -1406,37 +1651,164 @@ function activateDrawerTab(tabName) {
     $$('#studioDrawer .drawer-tab-view').forEach(view => view.hidden = true);
 
     const tabMap = {
-        'ai': '#drawerTabAI',
-        'rapid': '#drawerTabRapid',
         'media': '#drawerTabMedia',
+        'crop': '#drawerTabCrop',
         'subtitles': '#drawerTabSubs',
         'masks': '#drawerTabMasks',
-        'audio': '#drawerTabAudio'
+        'audio': '#drawerTabAudio',
+        'ai': '#drawerTabAI'
     };
-    const targetSelector = tabMap[tabName] || '#drawerTabAI';
+    const targetSelector = tabMap[tabName] || '#drawerTabMedia';
     const target = $(targetSelector);
     if (target) target.hidden = false;
 }
 
-// Aspect Ratio Switcher
-const ASPECT_PRESETS = [
-    { ratio: '9:16', label: 'Vertical', cls: 'aspect-9-16' },
-    { ratio: '16:9', label: 'Widescreen', cls: 'aspect-16-9' },
-    { ratio: '1:1', label: 'Square', cls: 'aspect-1-1' }
-];
-let currentAspectIdx = 0;
+/* ============================================================
+   ASPECT RATIO MENU & SELECTION
+============================================================ */
+function initAspectRatioDropdown() {
+    const btn = $('#studioAspectBtn');
+    const menu = $('#aspectRatioMenu');
+    if (!btn || !menu) return;
 
-function cycleAspectRatio() {
-    currentAspectIdx = (currentAspectIdx + 1) % ASPECT_PRESETS.length;
-    const preset = ASPECT_PRESETS[currentAspectIdx];
+    btn.onclick = (e) => {
+        e.stopPropagation();
+        menu.hidden = !menu.hidden;
+    };
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#aspectRatioDropdownWrap')) {
+            menu.hidden = true;
+        }
+    });
+
+    $$('.aspect-option-item', menu).forEach(item => {
+        item.onclick = (e) => {
+            e.stopPropagation();
+            const ratio = item.dataset.ratio;
+            const label = item.dataset.label;
+            const cls = item.dataset.cls;
+            setStudioAspectRatio(ratio, label, cls);
+            menu.hidden = true;
+        };
+    });
+}
+
+function setStudioAspectRatio(ratio, label, cls) {
     const vp = $('#studioViewport');
     if (vp) {
-        vp.classList.remove('aspect-9-16', 'aspect-16-9', 'aspect-1-1');
-        vp.classList.add(preset.cls);
+        vp.classList.remove('aspect-9-16', 'aspect-16-9', 'aspect-1-1', 'aspect-4-5', 'aspect-21-9');
+        vp.classList.add(cls);
+        const mainVid = $('#cinemaMainVideo');
+        if (mainVid && mainVid.src && !mainVid.src.endsWith('/sample.mp4') && mainVid.src !== window.location.href) {
+            vp.classList.remove('empty-viewport');
+        }
     }
-    $('#aspectRatioLabel').textContent = preset.ratio;
-    $('#aspectRatioSub').textContent = preset.label;
-    toast(`Aspect ratio: ${preset.ratio} (${preset.label})`);
+    if ($('#aspectRatioLabel')) $('#aspectRatioLabel').textContent = ratio;
+    if ($('#aspectRatioSub')) $('#aspectRatioSub').textContent = label;
+
+    $$('#aspectRatioMenu .aspect-option-item').forEach(item => {
+        const isSelected = item.dataset.ratio === ratio;
+        item.classList.toggle('active', isSelected);
+        const check = item.querySelector('.check-icon');
+        if (check) check.style.display = isSelected ? 'block' : 'none';
+    });
+
+    toast(`Canvas format: ${ratio} (${label})`);
+}
+
+/* ============================================================
+   DRAGGABLE SUBTITLES ON CANVAS
+============================================================ */
+function initDraggableSubtitles() {
+    const capview = $('#cinemaCapview');
+    const stage = $('#cinemaStage');
+    if (!capview || !stage) return;
+
+    let isDragging = false;
+    let startY = 0;
+    let initialTop = 72;
+
+    capview.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isDragging = true;
+        startY = e.clientY;
+        const currentTop = parseFloat(capview.style.top) || 72;
+        initialTop = currentTop;
+        capview.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = stage.getBoundingClientRect();
+        if (rect.height <= 0) return;
+        const deltaPx = e.clientY - startY;
+        const deltaPct = (deltaPx / rect.height) * 100;
+        let newTop = clamp(initialTop + deltaPct, 8, 92);
+        capview.style.top = newTop + '%';
+
+        const posSlider = $('#inspectorPosSlider');
+        const posVal = $('#inspectorPosVal');
+        if (posSlider) posSlider.value = (newTop / 100).toFixed(2);
+        if (posVal) posVal.textContent = Math.round(newTop) + '%';
+
+        if (window.activeStudioCard) {
+            window.activeStudioCard.tools.captions.posY = newTop / 100;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            capview.style.cursor = 'grab';
+        }
+    });
+}
+
+/* ============================================================
+   CANVAS PANNING (DRAGGING TO FRAME VIDEO)
+============================================================ */
+function initVideoPanning() {
+    const stage = $('#cinemaStage');
+    if (!stage) return;
+
+    let isPanning = false;
+    let startX = 0, startY = 0;
+    let origPanX = 0, origPanY = 0;
+    let hasMoved = false;
+
+    stage.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#cinemaCapview') || e.target.closest('.bbox') || e.target.closest('#studioEmptyState') || e.target.closest('.canvas-tool-btn') || e.target.closest('input')) return;
+        isPanning = true;
+        hasMoved = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        origPanX = videoTransform.panX;
+        origPanY = videoTransform.panY;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+            hasMoved = true;
+            stage.style.cursor = 'move';
+            videoTransform.panX = origPanX + dx;
+            videoTransform.panY = origPanY + dy;
+            applyVideoTransforms();
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isPanning) {
+            isPanning = false;
+            stage.style.cursor = '';
+            if (!hasMoved) {
+                window.toggleStudioPlay();
+            }
+        }
+    });
 }
 
 // Inspector Preset Rendering
@@ -1504,21 +1876,37 @@ function initCinemaControls() {
             toast('Please import a video first! ⚡');
             return;
         }
+        const dub = $('#cinemaVoiceover');
         if (vid.paused) {
             vid.play().catch(() => {});
+            if (dub && dub.src && !dub.hidden) {
+                dub.currentTime = vid.currentTime;
+                dub.play().catch(() => {});
+            }
             if (playIcon) playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
         } else {
             vid.pause();
+            if (dub && dub.src) dub.pause();
             if (playIcon) playIcon.innerHTML = '<polygon points="6 3 20 12 6 21 6 3"></polygon>';
         }
     };
 
     if (playBtn) playBtn.onclick = window.toggleStudioPlay;
-    const stage = $('#cinemaStage');
-    if (stage) stage.onclick = window.toggleStudioPlay;
 
-    if (skipBack) skipBack.onclick = () => { if (vid.src) vid.currentTime = Math.max(0, vid.currentTime - 5); };
-    if (skipFwd) skipFwd.onclick = () => { if (vid.src) vid.currentTime = Math.min(vid.duration || 15, vid.currentTime + 5); };
+    if (skipBack) skipBack.onclick = () => {
+        if (vid.src) {
+            vid.currentTime = Math.max(0, vid.currentTime - 5);
+            const dub = $('#cinemaVoiceover');
+            if (dub && dub.src) dub.currentTime = vid.currentTime;
+        }
+    };
+    if (skipFwd) skipFwd.onclick = () => {
+        if (vid.src) {
+            vid.currentTime = Math.min(vid.duration || 15, vid.currentTime + 5);
+            const dub = $('#cinemaVoiceover');
+            if (dub && dub.src) dub.currentTime = vid.currentTime;
+        }
+    };
 
     vid.ontimeupdate = () => {
         if (window.Timeline) {
@@ -1535,14 +1923,26 @@ function initCinemaControls() {
         }
     };
 
+    vid.onseeking = () => {
+        const dub = $('#cinemaVoiceover');
+        if (dub && dub.src) dub.currentTime = vid.currentTime;
+    };
+
     vid.onended = () => {
+        const dub = $('#cinemaVoiceover');
+        if (dub && dub.src) dub.pause();
         if (playIcon) playIcon.innerHTML = '<polygon points="6 3 20 12 6 21 6 3"></polygon>';
     };
 
     if (volBtn) {
         volBtn.onclick = () => {
-            vid.muted = !vid.muted;
-            toast(vid.muted ? 'Sound muted' : 'Sound unmuted');
+            if (vid.muted || vid.volume === 0) {
+                setVideoVolume(1);
+                toast('Sound unmuted (100%)');
+            } else {
+                setVideoVolume(0);
+                toast('Sound muted');
+            }
         };
     }
 
@@ -1598,9 +1998,12 @@ function initCinemaControls() {
         };
     }
 
-    // Aspect Ratio Button
-    const aspectBtn = $('#studioAspectBtn');
-    if (aspectBtn) aspectBtn.onclick = cycleAspectRatio;
+    // Dropdown Aspect Ratio Menu
+    initAspectRatioDropdown();
+
+    // Draggable Subtitles & Pan Framing
+    initDraggableSubtitles();
+    initVideoPanning();
 
     // Rail Navigation
     $('#studioRail').onclick = e => {
@@ -1722,9 +2125,9 @@ const DEFAULT_CONFIG = {
     renderInspectorPresets();
     if (window.Timeline) Timeline.init();
 
-    // Default mode: Studio Pro, but smoothly mount setup box inside drawer
+    // Default mode: Studio Pro Editor (Media Drawer open)
     switchWorkspaceMode('studio');
-    activateDrawerTab('rapid');
+    activateDrawerTab('media');
 
     window.openBackendModal = function() {
         const m = $('#backend-modal');

@@ -529,28 +529,28 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-/* Left Icon Ribbon (60px) */
+/* Left Icon Ribbon (76px) */
 .studio-rail {
-    width: 60px;
+    width: 76px;
     background: var(--studio-bg-surface);
     border-right: 1px solid var(--studio-border);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 0;
+    padding: 12px 0;
     gap: 8px;
     flex-shrink: 0;
 }
 
 .rail-btn {
-    width: 52px;
-    height: 52px;
+    width: 66px;
+    height: 56px;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 5px;
     color: var(--studio-text-muted);
     cursor: pointer;
     transition: all 0.15s ease;
@@ -559,15 +559,15 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
 }
 .rail-btn:hover {
     color: #f8fafc;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
 }
 .rail-btn.active {
     color: #c4b5fd;
     background: var(--studio-accent-purple-dim);
-    box-shadow: inset 2.5px 0 0 #8b5cf6;
+    box-shadow: inset 3px 0 0 #8b5cf6;
 }
 .rail-label {
-    font-size: 0.58rem;
+    font-size: 0.64rem;
     font-weight: 600;
     letter-spacing: 0.01em;
 }
@@ -659,6 +659,86 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
     height: 300px;
     aspect-ratio: 1/1;
 }
+.studio-viewport.aspect-4-5 {
+    height: 310px;
+    aspect-ratio: 4/5;
+}
+.studio-viewport.aspect-21-9 {
+    width: 480px;
+    max-height: 240px;
+    aspect-ratio: 21/9;
+}
+
+/* Empty Viewport: Spacious and comfortable dropzone card (not squished to 174px!) */
+.studio-viewport.empty-viewport {
+    width: min(520px, 94%) !important;
+    height: 330px !important;
+    aspect-ratio: unset !important;
+    max-height: none !important;
+}
+
+/* Dropdown Menu for Aspect Ratio Formats */
+.studio-dropdown-menu {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(16px);
+}
+.aspect-option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.aspect-option-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.aspect-option-item.active {
+    background: rgba(124, 58, 237, 0.16);
+    border-color: rgba(124, 58, 237, 0.35);
+}
+.aspect-icon-box {
+    border: 1.5px solid #a78bfa;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.aspect-icon-box.vertical { width: 12px; height: 20px; }
+.aspect-icon-box.widescreen { width: 22px; height: 13px; }
+.aspect-icon-box.square { width: 16px; height: 16px; }
+.aspect-icon-box.portrait { width: 15px; height: 19px; }
+.aspect-icon-box.cinematic { width: 24px; height: 11px; }
+
+/* Canvas Tool buttons */
+.canvas-tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #94a3b8;
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.canvas-tool-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+}
+.canvas-tool-btn.active {
+    color: #c4b5fd;
+    background: rgba(124, 58, 237, 0.2);
+    border-color: rgba(124, 58, 237, 0.4);
+}
 
 .studio-title-pill {
     align-self: center;
@@ -703,12 +783,12 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 24px 30px;
     text-align: center;
-    background: radial-gradient(circle at center, rgba(30, 33, 48, 0.92) 0%, rgba(13, 15, 22, 0.98) 100%);
+    background: radial-gradient(circle at center, rgba(30, 33, 48, 0.95) 0%, rgba(13, 15, 22, 0.98) 100%);
     z-index: 30;
-    border-radius: 8px;
-    border: 2px dashed rgba(167, 139, 250, 0.25);
+    border-radius: 12px;
+    border: 2px dashed rgba(167, 139, 250, 0.35);
     transition: all 0.25s ease;
 }
 .studio-empty-state.drag-over {
@@ -854,7 +934,7 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
 /* Time Ruler */
 .timeline-ruler {
     display: flex;
-    margin-left: 85px;
+    margin-left: 125px;
     height: 18px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     position: relative;
@@ -864,12 +944,12 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
 /* Playhead Scrubber */
 .timeline-playhead-needle {
     position: absolute;
-    left: 85px;
+    left: 125px;
     top: 0;
     bottom: 0;
     width: 2px;
     background: var(--studio-accent-purple);
-    z-index: 35;
+    z-index: 25;
     pointer-events: none;
     transition: left 0.04s linear;
 }
@@ -891,19 +971,26 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
 /* Track Rows */
 .track-row {
     display: grid;
-    grid-template-columns: 85px 1fr;
+    grid-template-columns: 115px 1fr;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     min-height: 28px;
+    position: relative;
 }
 .track-header {
-    font-size: 0.68rem;
+    width: 115px;
+    min-width: 115px;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--studio-text-muted);
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     white-space: nowrap;
+    background: #0e0f15;
+    padding-right: 8px;
+    position: relative;
+    z-index: 30;
 }
 .track-lane {
     position: relative;

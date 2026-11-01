@@ -90,7 +90,7 @@
                 if (this.state.duration <= 0) return;
                 const rect = tracksViewport.getBoundingClientRect();
                 const scrollLeft = tracksViewport.scrollLeft;
-                const offsetX = (e.clientX - rect.left + scrollLeft) - 85; // minus header offset
+                const offsetX = (e.clientX - rect.left + scrollLeft) - 125; // header offset (115px + padding)
                 const newTime = Math.max(0, Math.min(this.state.duration, offsetX / this.state.zoom));
                 this.setTime(newTime, true);
             };
@@ -198,7 +198,7 @@
         updatePlayhead() {
             const needle = document.getElementById('timelinePlayheadNeedle');
             if (!needle) return;
-            const xPos = 85 + (this.state.currentTime * this.state.zoom);
+            const xPos = 125 + (this.state.currentTime * this.state.zoom);
             needle.style.left = `${xPos}px`;
         },
 
