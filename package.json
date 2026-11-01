@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build": "node -e \"console.log('Build complete')\"",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {

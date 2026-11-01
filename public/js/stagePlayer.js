@@ -35,29 +35,29 @@
                 </div>
             </div>
             <div class="tools">
-                <div class="field-label" style="margin:0"><i class="fa-solid fa-wand-magic-sparkles"></i> Unelte Video & Caption</div>
+                <div class="field-label" style="margin:0"><i class="fa-solid fa-wand-magic-sparkles"></i> Video & Caption Tools</div>
                 <div class="tool-row">
                     <button class="tbtn" data-a="blurTool"><i class="fa-solid fa-droplet"></i>Blur</button>
                     <button class="tbtn" data-a="maskTool"><i class="fa-solid fa-masks-theater"></i>Mask</button>
                     <button class="tbtn" data-a="mirrorTool"><i class="fa-solid fa-left-right"></i>Mirror</button>
                 </div>
                 <div class="tpanel" data-p="blur" hidden>
-                    <p class="muted">Trage zona peste text, redimensionează din colț (max 4 zone).</p>
+                    <p class="muted">Drag box over text, resize from corner (max 4 zones).</p>
                     <div class="trow">
-                        <button class="ghost-btn" data-a="addBlur"><i class="fa-solid fa-plus"></i> Zonă</button>
-                        <button class="ghost-btn" data-a="clearBlur"><i class="fa-solid fa-trash"></i> Șterge</button>
+                        <button class="ghost-btn" data-a="addBlur"><i class="fa-solid fa-plus"></i> Zone</button>
+                        <button class="ghost-btn" data-a="clearBlur"><i class="fa-solid fa-trash"></i> Clear</button>
                     </div>
                 </div>
                 <div class="tpanel" data-p="mask" hidden>
-                    <label class="ctl"><span class="top">Poziție bandă <b data-o="posY">50%</b></span><input type="range" min="0" max="1" step="0.01" data-m="posY" value="0.5"></label>
-                    <label class="ctl"><span class="top">Grosime bandă <b data-o="thickness">50%</b></span><input type="range" min="0.1" max="1" step="0.01" data-m="thickness" value="0.5"></label>
-                    <label class="ctl"><span class="top">Zoom fundal <b data-o="zoom">1.60×</b></span><input type="range" min="1" max="3" step="0.05" data-m="zoom" value="1.6"></label>
-                    <label class="chk"><input type="checkbox" data-m="blackBg"> Fundal negru</label>
+                    <label class="ctl"><span class="top">Band position <b data-o="posY">50%</b></span><input type="range" min="0" max="1" step="0.01" data-m="posY" value="0.5"></label>
+                    <label class="ctl"><span class="top">Band thickness <b data-o="thickness">50%</b></span><input type="range" min="0.1" max="1" step="0.01" data-m="thickness" value="0.5"></label>
+                    <label class="ctl"><span class="top">Background zoom <b data-o="zoom">1.60×</b></span><input type="range" min="1" max="3" step="0.05" data-m="zoom" value="1.6"></label>
+                    <label class="chk"><input type="checkbox" data-m="blackBg"> Black background</label>
                 </div>
 
                 <div class="capsec">
                     <div class="cap-hd">
-                        <div class="field-label" style="margin:0"><i class="fa-solid fa-closed-captioning"></i> Caption pe video</div>
+                        <div class="field-label" style="margin:0"><i class="fa-solid fa-closed-captioning"></i> Captions on video</div>
                         <label class="switch"><input type="checkbox" data-cap="enabled" checked><span></span></label>
                     </div>
                     <div class="cap-body">
@@ -70,7 +70,7 @@
                             `).join('')}
                         </div>
                         <div class="ctl">
-                            <span class="top">Poziția textului <b data-o="capPos">72%</b></span>
+                            <span class="top">Text position <b data-o="capPos">72%</b></span>
                             <div class="posrow">
                                 <button type="button" class="nudge" data-a="capNudge" data-d="-1"><i class="fa-solid fa-chevron-up"></i></button>
                                 <input type="range" min="0.05" max="0.95" step="0.01" data-cap="posY" value="0.72">
@@ -78,29 +78,29 @@
                             </div>
                         </div>
                         <div class="row2">
-                            <div><div class="mini-lab">Mărime</div><div class="seg" data-capseg="size">${['s','m','l'].map(v => `<button type="button" class="${v === 'm' ? 'on' : ''}" data-a="capSeg" data-f="size" data-v="${v}">${v.toUpperCase()}</button>`).join('')}</div></div>
-                            <div><div class="mini-lab">Cuvinte</div><div class="seg" data-capseg="per">${[2,4,6].map(v => `<button type="button" class="${v === (c.tools.captions.per || 4) ? 'on' : ''}" data-a="capSeg" data-f="per" data-v="${v}">${v}</button>`).join('')}</div></div>
+                            <div><div class="mini-lab">Size</div><div class="seg" data-capseg="size">${['s','m','l'].map(v => `<button type="button" class="${v === 'm' ? 'on' : ''}" data-a="capSeg" data-f="size" data-v="${v}">${v.toUpperCase()}</button>`).join('')}</div></div>
+                            <div><div class="mini-lab">Words</div><div class="seg" data-capseg="per">${[2,4,6].map(v => `<button type="button" class="${v === (c.tools.captions.per || 4) ? 'on' : ''}" data-a="capSeg" data-f="per" data-v="${v}">${v}</button>`).join('')}</div></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="capsec">
                     <div class="cap-hd">
-                        <div class="field-label" style="margin:0"><i class="fa-solid fa-film"></i> Clipul tău (CTA)</div>
+                        <div class="field-label" style="margin:0"><i class="fa-solid fa-film"></i> Your Clip (CTA)</div>
                         <label class="switch"><input type="checkbox" data-cta><span></span></label>
                     </div>
                     <div class="cta-body" hidden>
                         <div class="seg cta-pos">
-                            <button type="button" data-a="ctaPos" data-p="start">Început</button>
-                            <button type="button" data-a="ctaPos" data-p="here">Aici</button>
-                            <button type="button" data-a="ctaPos" data-p="end" class="on">Final</button>
+                            <button type="button" data-a="ctaPos" data-p="start">Start</button>
+                            <button type="button" data-a="ctaPos" data-p="here">Here</button>
+                            <button type="button" data-a="ctaPos" data-p="end" class="on">End</button>
                         </div>
                     </div>
                 </div>
 
-                <button class="gen-btn" data-a="download"><i class="fa-solid fa-download"></i> <span class="dl-lab">Exportă & descarcă</span></button>
-                <button class="sched-btn" data-a="schedule"><i class="fa-solid fa-calendar-plus"></i> Programează postarea</button>
-                <details class="txt"><summary>Textul tradus</summary><p>${esc(r.text)}</p></details>
+                <button class="gen-btn" data-a="download"><i class="fa-solid fa-download"></i> <span class="dl-lab">Export & Download</span></button>
+                <button class="sched-btn" data-a="schedule"><i class="fa-solid fa-calendar-plus"></i> Schedule Post</button>
+                <details class="txt"><summary>Translated text</summary><p>${esc(r.text)}</p></details>
             </div>
             `;
             body.hidden = false;

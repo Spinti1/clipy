@@ -40,7 +40,7 @@
                         this.addRow(null, links[i], false);
                     }
                     this.refreshRows();
-                    toast(`${links.length} linkuri adăugate!`);
+                    toast(`${links.length} links added!`);
                 }
             };
 
@@ -101,9 +101,9 @@
             row.className = 'url-row prompt-wrap';
             row.innerHTML = `
                 <i class="fa-solid fa-link url-ico"></i>
-                <input type="text" inputmode="url" placeholder="https://youtube.com/... sau tiktok.com/..." class="url-input v-input" value="${esc(val)}">
+                <input type="text" inputmode="url" placeholder="https://youtube.com/... or tiktok.com/..." class="url-input v-input" value="${esc(val)}">
                 <span class="url-plat"></span>
-                <button type="button" class="remove-btn" aria-label="Șterge linkul"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="remove-btn" aria-label="Remove link"><i class="fa-solid fa-xmark"></i></button>
             `;
             return row;
         },
@@ -133,9 +133,9 @@
                 $('.remove-btn', row).hidden = rows.length === 1;
             });
             const nf = uploads.size;
-            $('#linkCount').textContent = rows.length + (rows.length === 1 ? ' link' : ' linkuri') + (nf ? ` · ${nf} fișiere` : '');
+            $('#linkCount').textContent = rows.length + (rows.length === 1 ? ' link' : ' links') + (nf ? ` · ${nf} file${nf > 1 ? 's' : ''}` : '');
             const n = this.parseLinks().length + uploads.size;
-            $('#goCost').textContent = 'Gratuit ⚡';
+            $('#goCost').textContent = 'Free ⚡';
         },
 
         parseLinks() {
@@ -151,9 +151,9 @@
                     <i class="fa-solid fa-circle-check f-ico" style="color:var(--accent)"></i>
                     <div class="f-tx">
                         <div class="f-name">${esc(f.name)}</div>
-                        <div class="f-sub">${(f.size / 1048576).toFixed(1)} MB · gata de procesare</div>
+                        <div class="f-sub">${(f.size / 1048576).toFixed(1)} MB · ready to process</div>
                     </div>
-                    <button type="button" class="remove-btn" aria-label="Șterge"><i class="fa-solid fa-xmark"></i></button>
+                    <button type="button" class="remove-btn" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
                 `;
                 $('#fileList').appendChild(row);
                 const obj = { id, file: f, url: URL.createObjectURL(f), uploadName: f.name, el: row };
@@ -161,12 +161,12 @@
                 $('.remove-btn', row).onclick = () => { row.remove(); uploads.delete(id); this.refreshRows(); };
             }
             this.refreshRows();
-            toast(`${files.length} video adăugat cu succes!`);
+            toast(`${files.length} video${files.length > 1 ? 's' : ''} added successfully!`);
         },
 
         renderVoices() {
             if (!CFG || !CFG.voices) return;
-            const currentLang = state.lang || 'română';
+            const currentLang = state.lang || 'engleză';
             const langVoices = CFG.voices.filter(v => v.lang === currentLang);
             const voicesToShow = langVoices.length ? langVoices : CFG.voices.slice(0, 4);
 
@@ -180,7 +180,7 @@
                     <span class="vplay" data-play="${esc(v.key)}"><i class="fa-solid fa-play"></i></span>
                 </div>
             `).join('');
-            $('#voiceCount').textContent = voicesToShow.length + ' voci';
+            $('#voiceCount').textContent = voicesToShow.length + ' voices';
         },
 
         selectVoice(k) {

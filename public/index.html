@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ro" class="dark">
+<html lang="en" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Clipy Studio · Editor Video & Speed</title>
+<title>Clipy Studio · AI Video Editor & Speed</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237c3aed'><polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/></svg>">
 <meta name="theme-color" content="#090a0f">
 
@@ -36,7 +36,7 @@
 
         <!-- Editable Project Title -->
         <div class="studio-project-pill">
-            <input type="text" id="studioProjectTitle" class="studio-project-input" value="Proiect_Video_01" title="Numele proiectului">
+            <input type="text" id="studioProjectTitle" class="studio-project-input" value="Viral_Video_Project_01" title="Project name">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
             </svg>
@@ -64,7 +64,7 @@
         <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.1);"></div>
 
         <!-- Aspect Ratio Switcher -->
-        <button class="clipy-btn" id="studioAspectBtn" style="background: #1a1c26; border-color: rgba(255,255,255,0.1); padding: 5px 12px; gap: 8px;" title="Schimbă raportul de aspect">
+        <button class="clipy-btn" id="studioAspectBtn" style="background: #1a1c26; border-color: rgba(255,255,255,0.1); padding: 5px 12px; gap: 8px;" title="Switch video aspect ratio">
             <svg id="aspectRatioIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
                 <line x1="12" y1="18" x2="12.01" y2="18"></line>
@@ -75,9 +75,9 @@
 
         <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.1);"></div>
 
-        <!-- Mode Toggle: Studio Pro vs Generator Clasic -->
+        <!-- Mode Toggle: Studio Pro vs Classic Generator -->
         <div class="studio-mode-toggle" id="modeToggle">
-            <button type="button" class="mode-toggle-btn active" id="btnModeStudio" title="Interfață completă de editare video stil Clipchamp">
+            <button type="button" class="mode-toggle-btn active" id="btnModeStudio" title="Full Clipchamp-style video editor with timeline">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="3" width="20" height="14" rx="2"></rect>
                     <line x1="8" y1="21" x2="16" y2="21"></line>
@@ -85,20 +85,20 @@
                 </svg>
                 <span>Studio Pro</span>
             </button>
-            <button type="button" class="mode-toggle-btn" id="btnModeClassic" title="Interfața clasică de generare rapidă adaptată">
+            <button type="button" class="mode-toggle-btn" id="btnModeClassic" title="Classic quick generator interface adapted to dark theme">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
-                <span>Generator Clasic</span>
+                <span>Classic Generator</span>
             </button>
         </div>
     </div>
 
     <!-- Right: Cloud Status, Backend Connection, Export MP4 -->
     <div style="display: flex; align-items: center; gap: 10px;">
-        <button type="button" id="backendConnBtn" class="clipy-btn" style="padding: 5px 10px; font-size: 0.72rem;" title="Status server de procesare FFmpeg">
+        <button type="button" id="backendConnBtn" class="clipy-btn" style="padding: 5px 10px; font-size: 0.72rem;" title="FFmpeg compute engine connection status">
             <span class="backend-dot" style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
-            <span id="backendStatusText" style="color: #cbd5e1;">Server Activ</span>
+            <span id="backendStatusText" style="color: #cbd5e1;">Server Active</span>
         </button>
 
         <div style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #10b981; font-weight: 600;">
@@ -114,7 +114,7 @@
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
-            <span>Exportă MP4</span>
+            <span>Export MP4</span>
         </button>
     </div>
 </header>
@@ -131,7 +131,7 @@
         <!-- 1. Far Left Icon Ribbon (60px) -->
         <nav class="studio-rail" id="studioRail">
             <!-- Tab: AI Tools -->
-            <button class="rail-btn active" data-tab="ai" title="Instrumente Inteligente AI">
+            <button class="rail-btn active" data-tab="ai" title="AI Smart Tools">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
                     <path d="M5 3v4"></path>
@@ -142,8 +142,8 @@
                 <span class="rail-label">AI Studio</span>
             </button>
 
-            <!-- Tab: Generator Rapid (Adapted Legacy Section) -->
-            <button class="rail-btn" data-tab="rapid" title="Generator Rapid Link & Upload">
+            <!-- Tab: Quick Generator (Adapted Legacy Section) -->
+            <button class="rail-btn" data-tab="rapid" title="Quick Video Generator">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
@@ -151,7 +151,7 @@
             </button>
 
             <!-- Tab: Media -->
-            <button class="rail-btn" data-tab="media" title="Fișiere Media & Video">
+            <button class="rail-btn" data-tab="media" title="Media & Video Library">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
@@ -159,26 +159,26 @@
             </button>
 
             <!-- Tab: Subtitles -->
-            <button class="rail-btn" data-tab="subtitles" title="Stiluri & Preseturi Subtitrări">
+            <button class="rail-btn" data-tab="subtitles" title="Subtitles & Karaoke Presets">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="4" width="20" height="16" rx="3"></rect>
                     <path d="M7 15h3a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H7v6Z"></path>
                     <path d="M15 15h3a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-3v6Z"></path>
                 </svg>
-                <span class="rail-label">Subtitrări</span>
+                <span class="rail-label">Subtitles</span>
             </button>
 
             <!-- Tab: Masks & Blur -->
-            <button class="rail-btn" data-tab="masks" title="Măști de Confidențialitate & Blur">
+            <button class="rail-btn" data-tab="masks" title="Masks & Blur Privacy Boxes">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="m4.93 4.93 14.14 14.14"></path>
                 </svg>
-                <span class="rail-label">Măști/Blur</span>
+                <span class="rail-label">Masks/Blur</span>
             </button>
 
             <!-- Tab: Audio -->
-            <button class="rail-btn" data-tab="audio" title="Piste Audio & Dublaj">
+            <button class="rail-btn" data-tab="audio" title="Audio Tracks & Neural Dubbing">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2v20"></path>
                     <path d="M17 5v14"></path>
@@ -195,7 +195,7 @@
             <!-- TAB 1: AI STUDIO -->
             <div id="drawerTabAI" class="drawer-tab-view">
                 <div class="drawer-header">
-                    <span>Unelte Inteligente AI</span>
+                    <span>Smart AI Tools</span>
                     <span style="font-size: 0.62rem; font-weight: 700; background: rgba(124,58,237,0.18); color: #c4b5fd; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(124,58,237,0.3);">PRO</span>
                 </div>
                 <div class="drawer-content">
@@ -206,8 +206,8 @@
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <div style="font-size: 0.78rem; font-weight: 700; color: #f1f5f9;">Importă fișier sau link</div>
-                        <div style="font-size: 0.65rem; color: #71788e; margin-top: 2px;">Trage fișierul aici sau lipește URL</div>
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #f1f5f9;">Import file or link</div>
+                        <div style="font-size: 0.65rem; color: #71788e; margin-top: 2px;">Drop video file here or paste URL</div>
                     </div>
 
                     <!-- AI Tool Cards -->
@@ -219,12 +219,12 @@
                                     <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                                     <line x1="12" y1="19" x2="12" y2="22"></line>
                                 </svg>
-                                <span>Dublaj Voce AI</span>
+                                <span>AI Voice Dubbing</span>
                             </div>
-                            <span style="font-size: 0.6rem; font-weight: 700; color: #10b981;">ACTIV</span>
+                            <span style="font-size: 0.6rem; font-weight: 700; color: #10b981;">ACTIVE</span>
                         </div>
                         <p style="font-size: 0.67rem; color: #94a3b8; margin: 0; line-height: 1.35;">
-                            Traducere și clonare neurală cu sincronizare automată pe vorbire.
+                            Neural translation and human voice synthesis automatically locked to original speech timing.
                         </p>
                     </div>
 
@@ -234,12 +234,12 @@
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                                 </svg>
-                                <span>Subtitrări Karaoke</span>
+                                <span>Karaoke Subtitles</span>
                             </div>
-                            <span style="font-size: 0.6rem; color: #64748b;">Preseturi</span>
+                            <span style="font-size: 0.6rem; color: #64748b;">Presets</span>
                         </div>
                         <p style="font-size: 0.67rem; color: #94a3b8; margin: 0; line-height: 1.35;">
-                            Cuvinte active cu efect pop și preseturi animate stil viral.
+                            Word-by-word active pop scaling with viral TikTok and YouTube Shorts presets.
                         </p>
                     </div>
 
@@ -253,21 +253,21 @@
                                     <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
                                     <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
                                 </svg>
-                                <span>Auto-Cut Liniște</span>
+                                <span>Auto-Cut Silence</span>
                             </div>
                             <span style="font-size: 0.6rem; color: #64748b;">1-Click</span>
                         </div>
                         <p style="font-size: 0.67rem; color: #94a3b8; margin: 0; line-height: 1.35;">
-                            Decupează automat pauzele lungi din clipurile de 5-10 minute.
+                            Automatically cuts long dead pauses from 5–10 minute videos.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 2: GENERATOR RAPID (Target for SetupBox Container) -->
+            <!-- TAB 2: QUICK GENERATOR (Target for SetupBox Container) -->
             <div id="drawerTabRapid" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
-                    <span>Generator Rapid</span>
+                    <span>Quick Generator</span>
                     <span style="font-size: 0.62rem; font-weight: 700; color: #10b981;">ONLINE</span>
                 </div>
                 <div class="drawer-content" id="rapidContentMount">
@@ -278,39 +278,39 @@
             <!-- TAB 3: MEDIA -->
             <div id="drawerTabMedia" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
-                    <span>Media & Fișiere</span>
-                    <button class="clipy-btn" style="padding: 2px 8px; font-size: 0.68rem;" onclick="$('#fileInput').click()">+ Urcă</button>
+                    <span>Media & Files</span>
+                    <button class="clipy-btn" style="padding: 2px 8px; font-size: 0.68rem;" onclick="$('#fileInput').click()">+ Upload</button>
                 </div>
                 <div class="drawer-content">
                     <button class="clipy-btn" style="justify-content: center; width: 100%;" onclick="loadSampleVideoIntoStudio()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
                         </svg>
-                        <span>Încarcă Video Exemplu HD</span>
+                        <span>Load Sample HD Video</span>
                     </button>
                     <div style="font-size: 0.68rem; color: #71788e; text-align: center; margin-top: 8px;">
-                        Fișierele video procesate vor apărea aici în biblioteca proiectului.
+                        Processed videos will automatically appear in your media library.
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 4: SUBTITLURI -->
+            <!-- TAB 4: SUBTITLES -->
             <div id="drawerTabSubs" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
-                    <span>Configurare Subtitrări</span>
+                    <span>Subtitle Styles</span>
                 </div>
                 <div class="drawer-content">
-                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase;">Preseturi Active</label>
+                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase;">Active Presets</label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;" id="drawerPresetGrid">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 5: MĂȘTI & BLUR -->
+            <!-- TAB 5: MASKS & BLUR -->
             <div id="drawerTabMasks" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
-                    <span>Măști & Confidențialitate</span>
+                    <span>Masks & Privacy</span>
                 </div>
                 <div class="drawer-content">
                     <button class="clipy-btn" style="width: 100%; justify-content: center;" onclick="addStudioBlurBox()">
@@ -318,7 +318,7 @@
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        <span>Adaugă Zonă Blur</span>
+                        <span>Add Blur Box</span>
                     </button>
                     <button class="clipy-btn" style="width: 100%; justify-content: center; margin-top: 4px;" onclick="toggleStudioMirror()">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -327,7 +327,7 @@
                             <path d="m8 21-4-4 4-4"></path>
                             <path d="M4 17h16"></path>
                         </svg>
-                        <span>Efect Oglindă (Mirror Flip)</span>
+                        <span>Mirror Flip Effect</span>
                     </button>
                 </div>
             </div>
@@ -335,12 +335,12 @@
             <!-- TAB 6: AUDIO -->
             <div id="drawerTabAudio" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
-                    <span>Mixaj & Dublaj Audio</span>
+                    <span>Audio & Dubbing Mix</span>
                 </div>
                 <div class="drawer-content">
                     <div>
                         <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                            <span>Volum Voce Dublată</span>
+                            <span>AI Dubbed Voice Volume</span>
                             <span class="mono-code" id="dubVolVal">100%</span>
                         </div>
                         <input type="range" class="pro-slider" min="0" max="1" step="0.05" value="1" oninput="$('#dubVolVal').textContent = Math.round(this.value*100)+'%'">
@@ -358,7 +358,7 @@
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                     </svg>
-                    <span id="studioTitleText">SECRETELE UNUI CLIP VIRAL</span>
+                    <span id="studioTitleText">SECRETS OF A VIRAL VIDEO</span>
                 </div>
 
                 <!-- Video Stage -->
@@ -379,7 +379,7 @@
                     <div class="studio-bbox-dot bl"></div>
                     <div class="studio-bbox-dot br"></div>
                     <div id="studioBboxText" style="background: #65d69e; color: #07130d; font-family: 'Impact', sans-serif; font-size: 0.88rem; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.02em;">
-                        EXACT ACEST TRUC
+                        THIS EXACT TRICK
                     </div>
                 </div>
 
@@ -389,7 +389,7 @@
             <!-- Floating Glassmorphic Playback Bar -->
             <div class="studio-transport-bar">
                 <!-- Skip Back 5s -->
-                <button id="btnSkipBack" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 600;" title="Înapoi 5 secunde">
+                <button id="btnSkipBack" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 600;" title="Back 5 seconds">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m11 17-5-5 5-5"></path>
                         <path d="m18 17-5-5 5-5"></path>
@@ -398,14 +398,14 @@
                 </button>
 
                 <!-- Play/Pause Circle -->
-                <button class="studio-play-circle" id="btnPlayPause" title="Redă / Pune pauză (Spațiu)">
+                <button class="studio-play-circle" id="btnPlayPause" title="Play / Pause (Space)">
                     <svg id="playPauseIcon" width="14" height="14" viewBox="0 0 24 24" fill="#fff" stroke="none">
                         <polygon points="6 3 20 12 6 21 6 3"></polygon>
                     </svg>
                 </button>
 
                 <!-- Skip Forward 5s -->
-                <button id="btnSkipForward" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 600;" title="Înainte 5 secunde">
+                <button id="btnSkipForward" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 600;" title="Forward 5 seconds">
                     <span>5s</span>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m6 17 5-5-5-5"></path>
@@ -424,14 +424,14 @@
 
                 <!-- Volume & Fullscreen -->
                 <div style="display: flex; align-items: center; gap: 10px; color: #94a3b8;">
-                    <button id="btnStudioVol" style="background: transparent; border: none; color: inherit; cursor: pointer; display: flex; align-items: center;" title="Sunet on/off">
+                    <button id="btnStudioVol" style="background: transparent; border: none; color: inherit; cursor: pointer; display: flex; align-items: center;" title="Mute / Unmute">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
                         </svg>
                     </button>
-                    <button id="btnStudioFullscreen" style="background: transparent; border: none; color: inherit; cursor: pointer; display: flex; align-items: center;" title="Ecran complet">
+                    <button id="btnStudioFullscreen" style="background: transparent; border: none; color: inherit; cursor: pointer; display: flex; align-items: center;" title="Fullscreen">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
                             <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
@@ -447,15 +447,15 @@
         <aside class="studio-inspector" id="studioInspector">
             <!-- Tabs Header -->
             <div class="inspector-tab-header">
-                <button class="inspector-tab-btn active" data-itab="subs">Subtitrare</button>
+                <button class="inspector-tab-btn active" data-itab="subs">Subtitles</button>
                 <button class="inspector-tab-btn" data-itab="audio">Audio</button>
-                <button class="inspector-tab-btn" data-itab="speed">Viteză</button>
+                <button class="inspector-tab-btn" data-itab="speed">Speed</button>
             </div>
 
-            <!-- Tab Body: Subtitrare -->
+            <!-- Tab Body: Subtitles -->
             <div class="inspector-body" id="inspectorBodySubs">
                 <div>
-                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase; letter-spacing: 0.05em;">Stil Preset</label>
+                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase; letter-spacing: 0.05em;">Style Preset</label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;" id="inspectorPresets">
                         <!-- Populated by JS -->
                     </div>
@@ -464,7 +464,7 @@
                 <!-- Position Slider -->
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                        <span style="font-weight: 600;">Poziție verticală</span>
+                        <span style="font-weight: 600;">Vertical Position</span>
                         <span class="mono-code" id="inspectorPosVal" style="color: #a78bfa; font-weight: 700; font-family: 'JetBrains Mono', monospace;">72%</span>
                     </div>
                     <input type="range" class="pro-slider" id="inspectorPosSlider" min="0.05" max="0.95" step="0.01" value="0.72">
@@ -472,7 +472,7 @@
 
                 <!-- Font Size Selector -->
                 <div>
-                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase; letter-spacing: 0.05em;">Dimensiune text</label>
+                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase; letter-spacing: 0.05em;">Text Size</label>
                     <div style="display: flex; background: #1f222e; border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 2px; margin-top: 6px;" id="inspectorSizeSeg">
                         <button type="button" class="clipy-btn" style="flex: 1; justify-content: center; background: transparent; border: none;" data-v="s">S</button>
                         <button type="button" class="clipy-btn" style="flex: 1; justify-content: center; background: #7c3aed; color: #fff; border: none;" data-v="m">M</button>
@@ -482,7 +482,7 @@
 
                 <!-- Word Chunk Size -->
                 <div>
-                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase; letter-spacing: 0.05em;">Cuvinte per grup</label>
+                    <label style="font-size: 0.66rem; font-weight: 700; color: #8e95a5; text-transform: uppercase; letter-spacing: 0.05em;">Words per Chunk</label>
                     <div style="display: flex; background: #1f222e; border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 2px; margin-top: 6px;" id="inspectorPerSeg">
                         <button type="button" class="clipy-btn" style="flex: 1; justify-content: center; background: transparent; border: none;" data-v="2">2</button>
                         <button type="button" class="clipy-btn" style="flex: 1; justify-content: center; background: #7c3aed; color: #fff; border: none;" data-v="4">4</button>
@@ -495,25 +495,25 @@
             <div class="inspector-body" id="inspectorBodyAudio" hidden>
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                        <span>Volum Voce AI</span>
+                        <span>AI Voice Volume</span>
                         <span class="mono-code" id="inspDubVol">100%</span>
                     </div>
                     <input type="range" class="pro-slider" min="0" max="1" step="0.05" value="1" oninput="$('#inspDubVol').textContent = Math.round(this.value*100)+'%'">
                 </div>
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                        <span>Volum Original Video</span>
+                        <span>Original Video Volume</span>
                         <span class="mono-code" id="inspOrigVol">0%</span>
                     </div>
                     <input type="range" class="pro-slider" min="0" max="1" step="0.05" value="0" oninput="$('#inspOrigVol').textContent = Math.round(this.value*100)+'%'">
                 </div>
             </div>
 
-            <!-- Tab Body: Viteză -->
+            <!-- Tab Body: Speed -->
             <div class="inspector-body" id="inspectorBodySpeed" hidden>
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; margin-bottom: 6px;">
-                        <span>Viteză Redare Voce</span>
+                        <span>Voice Playback Speed</span>
                         <span class="mono-code" id="inspSpeedVal">1.35×</span>
                     </div>
                     <input type="range" class="pro-slider" min="0.8" max="1.5" step="0.05" value="1.35" oninput="$('#inspSpeedVal').textContent = parseFloat(this.value).toFixed(2)+'×'">
@@ -530,7 +530,7 @@
             <!-- Left Editing Tools -->
             <div style="display: flex; align-items: center; gap: 6px;">
                 <!-- Split (S) -->
-                <button class="clipy-btn" id="tmSplitBtn" style="background: rgba(124,58,237,0.18); border-color: rgba(124,58,237,0.4); color: #c4b5fd; font-weight: 700;" title="Taie clipul la poziția cursorului (Tasta S)">
+                <button class="clipy-btn" id="tmSplitBtn" style="background: rgba(124,58,237,0.18); border-color: rgba(124,58,237,0.4); color: #c4b5fd; font-weight: 700;" title="Split clip at playhead cursor (Key S)">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="6" cy="6" r="3"></circle>
                         <circle cx="6" cy="18" r="3"></circle>
@@ -542,25 +542,25 @@
                 </button>
 
                 <!-- Delete -->
-                <button class="clipy-btn" id="tmDeleteBtn" title="Șterge segmentul selectat (Delete)">
+                <button class="clipy-btn" id="tmDeleteBtn" title="Delete selected clip segment (Delete)">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
-                    <span>Șterge</span>
+                    <span>Delete</span>
                 </button>
 
                 <!-- Duplicate -->
-                <button class="clipy-btn" id="tmDuplicateBtn" title="Duplică clipul">
+                <button class="clipy-btn" id="tmDuplicateBtn" title="Duplicate selected clip">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
-                    <span>Duplică</span>
+                    <span>Duplicate</span>
                 </button>
 
                 <!-- Snapping Magnet -->
-                <button class="clipy-btn active" id="tmSnapBtn" title="Snapping automat magnetic" style="padding: 6px 8px;">
+                <button class="clipy-btn active" id="tmSnapBtn" title="Magnetic snapping" style="padding: 6px 8px;">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.35-6.35a2.9 2.9 0 0 0-4.1-4.1L5 14"></path>
                     </svg>
@@ -603,7 +603,7 @@
                         <path d="M7 15h3a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H7v6Z"></path>
                         <path d="M15 15h3a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-3v6Z"></path>
                     </svg>
-                    <span>Subtitrări</span>
+                    <span>Subtitles</span>
                 </div>
                 <div class="track-lane" id="trackSubtitles" style="height: 26px;">
                     <!-- Rendered by timeline.js -->
@@ -634,7 +634,7 @@
                         <path d="M17 5v14"></path>
                         <path d="M7 8v8"></path>
                     </svg>
-                    <span>Dublaj Voce</span>
+                    <span>AI Dubbing</span>
                 </div>
                 <div class="track-lane" id="trackAudio" style="height: 28px;">
                     <!-- Rendered by timeline.js -->
@@ -648,7 +648,7 @@
                         <circle cx="12" cy="12" r="10"></circle>
                         <path d="m4.93 4.93 14.14 14.14"></path>
                     </svg>
-                    <span>Măști/Blur</span>
+                    <span>Masks/Blur</span>
                 </div>
                 <div class="track-lane" id="trackBlur" style="height: 24px;">
                     <!-- Rendered by timeline.js -->
@@ -661,20 +661,20 @@
 
 
 <!-- ============================================================
-     VIEW B: GENERATOR CLASIC (ADAPTED LEGACY SITE IN FLUENT DARK)
+     VIEW B: CLASSIC GENERATOR (ADAPTED LEGACY SITE IN FLUENT DARK)
      ============================================================ -->
 <main class="wrap" id="classicWorkspaceView" hidden style="margin-top: 16px;">
-    <!-- Setări Column -->
-    <section class="panel setup" id="classicSetupPanel" aria-label="Setări">
+    <!-- Settings Column -->
+    <section class="panel setup" id="classicSetupPanel" aria-label="Settings">
         <div class="hd">
             <div class="hd-ico">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#072215" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
             <div>
                 <h1>Clipy<span class="ultra-tag" id="ultraTag">Speed</span></h1>
-                <p>Link → voce tradusă și subtitrări sincronizate</p>
+                <p>Link → AI Dubbed Voice & Synchronized Captions</p>
             </div>
-            <span class="cost-pill" id="costPill">100% Gratuit</span>
+            <span class="cost-pill" id="costPill">100% Free</span>
         </div>
 
         <!-- REUSABLE SETUP BOX CONTAINER (Houses all legacy form controls) -->
@@ -682,16 +682,16 @@
             <div id="srcBox" class="src-box">
                 <div class="field-label">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                    Video — link sau upload <span class="link-counter" id="linkCount">1 link</span>
+                    Video — link or upload <span class="link-counter" id="linkCount">1 link</span>
                 </div>
                 <div id="urlList" class="url-list"></div>
                 <div id="fileList" class="url-list file-list"></div>
                 <div class="add-row">
-                    <button type="button" id="addUrlBtn" class="add-link-btn">+ Adaugă link</button>
-                    <button type="button" id="addFileBtn" class="add-link-btn">Urcă video</button>
+                    <button type="button" id="addUrlBtn" class="add-link-btn">+ Add link</button>
+                    <button type="button" id="addFileBtn" class="add-link-btn">Upload video</button>
                 </div>
                 <input type="file" id="fileInput" accept="video/*,.mp4,.mov,.mkv,.webm,.avi,.m4v" multiple hidden>
-                <div class="drop-hint">Lasă videoul aici</div>
+                <div class="drop-hint">Drop your video here</div>
                 <div class="plat-row">
                     <span class="pb">TikTok</span>
                     <span class="pb">YouTube</span>
@@ -699,31 +699,31 @@
                     <span class="pb">Facebook</span>
                     <span class="pb">Douyin</span>
                     <span class="pb">RedNote</span>
-                    <span class="pb">Fișierul tău</span>
+                    <span class="pb">Your File</span>
                 </div>
             </div>
 
             <div class="row2">
                 <div>
-                    <label class="field-label" for="lang">Limba vocii</label>
+                    <label class="field-label" for="lang">Voice Language</label>
                     <div class="select-wrap"><select id="lang" class="styled-select"></select></div>
                 </div>
                 <div>
-                    <div class="field-label">Sincronizare</div>
-                    <div class="seg" id="fitSeg" role="radiogroup" aria-label="Sincronizare">
-                        <button type="button" data-fit="voice" class="on" title="Videoul își păstrează lungimea, vocea intră fix în el">Voce → video</button>
-                        <button type="button" data-fit="video" title="Vocea rămâne la viteza aleasă, videoul se adaptează după ea">Video → voce</button>
+                    <div class="field-label">Synchronization</div>
+                    <div class="seg" id="fitSeg" role="radiogroup" aria-label="Synchronization">
+                        <button type="button" data-fit="voice" class="on" title="Video preserves duration, voice fits into it">Voice → Video</button>
+                        <button type="button" data-fit="video" title="Voice preserves selected speed, video adapts to voice">Video → Voice</button>
                     </div>
                 </div>
             </div>
 
             <div>
-                <div class="field-label">Voce <span class="link-counter" id="voiceCount">4 voci</span></div>
-                <div class="voices" id="voiceGrid" role="radiogroup" aria-label="Voce"></div>
+                <div class="field-label">AI Voice <span class="link-counter" id="voiceCount">4 voices</span></div>
+                <div class="voices" id="voiceGrid" role="radiogroup" aria-label="AI Voice"></div>
             </div>
 
             <div class="speed-row">
-                <label class="field-label" for="speed" style="margin:0">Viteza vocii <span class="right mono" id="speedVal">1.35×</span></label>
+                <label class="field-label" for="speed" style="margin:0">Voice Speed <span class="right mono" id="speedVal">1.35×</span></label>
                 <input type="range" id="speed" min="0.8" max="1.5" step="0.05" value="1.35">
                 <div class="presets" id="presets">
                     <button type="button" data-s="1">1×</button>
@@ -733,20 +733,20 @@
                 </div>
             </div>
 
-            <button id="goBtn" class="gen-btn" type="button">Pornește <span class="badge" id="goCost">Gratuit ⚡</span></button>
-            <div class="hint"><span id="priceHint">100% Gratuit · Fără credite · Nelimitat</span><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd></span></div>
+            <button id="goBtn" class="gen-btn" type="button">Generate Video <span class="badge" id="goCost">Free ⚡</span></button>
+            <div class="hint"><span id="priceHint">100% Free · No credits · Unlimited</span><span><kbd>Ctrl</kbd>+<kbd>Enter</kbd></span></div>
         </div>
     </section>
 
-    <!-- Rezultate Column -->
-    <section class="panel results" aria-label="Rezultate">
+    <!-- Results Column -->
+    <section class="panel results" aria-label="Results">
         <div class="res-hd">
             <div class="seg" id="tabs">
-                <button type="button" data-tab="jobs" class="on">Rezultate<span class="cnt" id="jobCount"></span></button>
-                <button type="button" data-tab="hist">Istoric</button>
-                <button type="button" data-tab="queue" id="queueTab">Coadă<span class="cnt" id="queueCount"></span></button>
+                <button type="button" data-tab="jobs" class="on">Results<span class="cnt" id="jobCount"></span></button>
+                <button type="button" data-tab="hist">History</button>
+                <button type="button" data-tab="queue" id="queueTab">Queue<span class="cnt" id="queueCount"></span></button>
             </div>
-            <button type="button" class="ghost-btn" id="clearDone" hidden>Curăță terminate</button>
+            <button type="button" class="ghost-btn" id="clearDone" hidden>Clear finished</button>
         </div>
 
         <div id="jobs"></div>
@@ -754,8 +754,8 @@
             <div class="empty-ico">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
-            <h2>Gata de viteză</h2>
-            <p>Adaugă oricâte linkuri sau urcă videoclipurile tale, alege vocea și apasă Pornește. Le procesăm pe rând și poți continua editarea fină în Clipy Studio.</p>
+            <h2>Ready for Speed</h2>
+            <p>Paste video links or upload your video files, choose an AI voice and click Generate. We process each video sequentially, and you can fine-tune in Clipy Studio.</p>
         </div>
         <div id="hist" hidden></div>
         <div id="queue" hidden></div>
@@ -772,8 +772,8 @@
 <div id="ultra-modal" class="modal-backdrop" hidden>
     <div class="usheet" role="dialog" aria-modal="true">
         <div class="usheet-hd">
-            <div><div class="modal-title" id="uTitleHd">Program de postare</div><p class="modal-sub" id="uSubHd"></p></div>
-            <button class="icon-btn" type="button" id="closeUModalBtn" aria-label="Închide">✕</button>
+            <div><div class="modal-title" id="uTitleHd">Publishing Schedule</div><p class="modal-sub" id="uSubHd"></p></div>
+            <button class="icon-btn" type="button" id="closeUModalBtn" aria-label="Close">✕</button>
         </div>
         <div class="usheet-body" id="uBody"></div>
         <div class="usheet-ft" id="uFoot"></div>
@@ -783,57 +783,57 @@
 <!-- Modal Topup Credits -->
 <div id="topup-modal" class="modal-backdrop" hidden>
     <div class="modal-card">
-        <button class="icon-btn" id="closeTopupBtn" aria-label="Închide">✕</button>
+        <button class="icon-btn" id="closeTopupBtn" aria-label="Close">✕</button>
         <div class="modal-title">Clipy Speed</div>
-        <p class="modal-sub">Clipy este 100% gratuit și nelimitat.</p>
+        <p class="modal-sub">Clipy is 100% free and unlimited.</p>
         <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="gen-btn" id="add50CreditsBtn" style="justify-content:center">Continuă gratuit</button>
+            <button class="gen-btn" id="add50CreditsBtn" style="justify-content:center">Continue for free</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Conectare Server Backend -->
+<!-- Modal Backend Connection -->
 <div id="backend-modal" class="modal-backdrop" hidden>
     <div class="modal-card backend-card">
-        <button class="icon-btn" id="closeBackendBtn" aria-label="Închide">✕</button>
-        <div class="modal-title">Conectare Server Clipy</div>
-        <p class="modal-sub">Pentru a descărca video de pe YouTube, a traduce și a genera vocile cu IA, Clipy folosește un motor de calcul dedicat.</p>
+        <button class="icon-btn" id="closeBackendBtn" aria-label="Close">✕</button>
+        <div class="modal-title">Connect Clipy Server</div>
+        <p class="modal-sub">To download videos from YouTube, translate, and synthesize voices with AI, Clipy uses a dedicated compute engine.</p>
         
         <div class="backend-opts">
             <div class="backend-opt">
                 <div class="opt-hd">
-                    <span class="opt-tag tag-green">Recomandat pe PC-ul tău</span>
-                    <div class="opt-title">Deschide pe Localhost</div>
+                    <span class="opt-tag tag-green">Recommended on your PC</span>
+                    <div class="opt-title">Open on Localhost</div>
                 </div>
-                <p class="opt-desc">Serverul tău complet cu FFmpeg și yt-dlp rulează deja pe calculatorul tău. Dacă deschizi Clipy pe localhost, totul funcționează 100% instant și nelimitat.</p>
+                <p class="opt-desc">Your full local server with FFmpeg and yt-dlp is already running on your PC. Opening Clipy on localhost gives you instant and unlimited video processing.</p>
                 <a href="http://localhost:3000" target="_blank" class="gen-btn" style="text-decoration:none; justify-content:center; display:flex;">
-                    Deschide http://localhost:3000
+                    Open http://localhost:3000
                 </a>
             </div>
 
             <div class="backend-opt">
                 <div class="opt-hd">
                     <span class="opt-tag tag-purple">Cloud 24/7 Permanent</span>
-                    <div class="opt-title">Conectează Render Cloud</div>
+                    <div class="opt-title">Connect Render Cloud</div>
                 </div>
-                <p class="opt-desc">Vrei ca linkul Vercel să poată fi accesat de oricine de oriunde? Pornește gratuit backend-ul pe Render cu 1 singur click:</p>
+                <p class="opt-desc">Want your Vercel URL to process videos from anywhere at any time? Launch your free cloud backend on Render with 1 click:</p>
                 <a href="https://render.com/deploy?repo=https://github.com/Spinti1/clipy" target="_blank" rel="noopener noreferrer" class="ghost-btn" style="text-decoration:none; justify-content:center; display:flex; color:var(--accent); border-color:var(--accent-border);">
-                    Lansează pe Render (1-Click Deploy)
+                    Deploy to Render (1-Click)
                 </a>
                 <div class="prompt-wrap url-row" style="margin-top:4px;">
                     <input type="text" id="backendUrlInput" class="url-input v-input" placeholder="https://clipy-backend.onrender.com">
-                    <button type="button" id="saveBackendUrlBtn" class="gen-btn" style="padding:6px 14px; font-size:0.75rem; border-radius:8px; margin:4px; white-space:nowrap;">Salvează</button>
+                    <button type="button" id="saveBackendUrlBtn" class="gen-btn" style="padding:6px 14px; font-size:0.75rem; border-radius:8px; margin:4px; white-space:nowrap;">Save</button>
                 </div>
             </div>
 
             <div class="backend-opt">
                 <div class="opt-hd">
-                    <span class="opt-tag tag-blue">Tunel Instant</span>
-                    <div class="opt-title">Conectează direct la PC</div>
+                    <span class="opt-tag tag-blue">Instant Tunnel</span>
+                    <div class="opt-title">Connect PC Tunnel</div>
                 </div>
-                <p class="opt-desc">Conectează această pagină Vercel direct la serverul care rulează acum pe calculatorul tău printr-un tunel securizat.</p>
+                <p class="opt-desc">Connect this Vercel webpage directly to the server running on your computer via an encrypted tunnel.</p>
                 <button type="button" id="connectTunnelBtn" class="ghost-btn" style="width:100%; justify-content:center;">
-                    Conectează Tunelul PC-ului
+                    Connect PC Tunnel
                 </button>
             </div>
         </div>
@@ -848,7 +848,7 @@
 
 <script>
 /* ============================================================
-   CLIPY STUDIO & SPEED COORDINATOR
+   CLIPY STUDIO & SPEED COORDINATOR (ENGLISH)
 ============================================================ */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -912,36 +912,36 @@ async function api(path, opts = {}) {
         r = await fetch(targetUrl, init);
     } catch (err) {
         if (API_BASE && targetUrl !== path) {
-            console.warn('[Clipy] Fallback la same-origin pentru:', path);
+            console.warn('[Clipy] Fallback to same-origin for:', path);
             try {
                 r = await fetch(path, init);
                 localStorage.removeItem('clipy_backend_url');
                 API_BASE = '';
                 window.API_BASE = '';
             } catch (fallbackErr) {
-                throw new Error('Eroare conexiune: ' + (fallbackErr.message || err.message || 'Server inaccesibil'));
+                throw new Error('Connection error: ' + (fallbackErr.message || err.message || 'Server unreachable'));
             }
         } else {
-            throw new Error('Eroare conexiune: ' + (err.message || 'Server inaccesibil'));
+            throw new Error('Connection error: ' + (err.message || 'Server unreachable'));
         }
     }
     if (r.status === 404 && path.startsWith('/api/jobs')) {
         if (typeof window.openBackendModal === 'function') {
             window.openBackendModal();
         }
-        throw new Error('Serverul backend nu este conectat pe acest domeniu Vercel. Deschide http://localhost:3000 sau conectează Render.');
+        throw new Error('Backend compute server is not connected. Open http://localhost:3000 or connect Render.');
     }
     const data = await r.json().catch(() => ({}));
     if (!r.ok || data.ok === false) {
-        throw new Error(data.error || `Eroare ${r.status}`);
+        throw new Error(data.error || `Error ${r.status}`);
     }
     return data;
 }
 
 const STEPS = [
-    { key: 'download', label: 'Descarc' },
-    { key: 'translate', label: 'Traduc' },
-    { key: 'voice', label: 'Voce' },
+    { key: 'download', label: 'Download' },
+    { key: 'translate', label: 'Translate' },
+    { key: 'voice', label: 'Voice' },
     { key: 'sync', label: 'Sync' },
     { key: 'render', label: 'Render' },
 ];
@@ -972,9 +972,9 @@ const HPLAT = {
 
 let CFG = null;
 const state = {
-    voice: 'ro_emil',
+    voice: 'en_christopher',
     speed: 1.35,
-    lang: 'română',
+    lang: 'engleză',
     fit: 'voice',
     user: { credits: 150, name: 'Clipy Creator' }
 };
@@ -1022,10 +1022,10 @@ function upsertCard(j) {
             <span class="plat">${(PLAT[j.platform] || ['Link'])[0]}</span>
             <span class="job-url">${esc(j.uploadName || j.url)}</span>
             <span class="job-meta">${esc(j.voiceLabel)} · ${fmtX(j.speed)}× · ${esc(j.langShort)}</span>
-            <button class="icon-btn" data-a="dismiss" title="Scoate din listă">✕</button>
+            <button class="icon-btn" data-a="dismiss" title="Remove from list">✕</button>
         </div>
         <div class="job-title-bar" ${(j.result && j.result.title) ? '' : 'hidden'}>
-            <span class="title-tag">Titlu Clip</span>
+            <span class="title-tag">Video Title</span>
             <span class="title-val">${esc((j.result && j.result.title) || '')}</span>
         </div>
         <div class="job-progress">
@@ -1121,7 +1121,7 @@ window.startBatchJobs = async function() {
     const links = SetupPanel.parseLinks();
     const upFiles = [...uploads.values()];
     if (!links.length && !upFiles.length) {
-        toast('Adaugă cel puțin un link sau urcă un video.');
+        toast('Add at least one link or upload a video file.');
         return;
     }
     const btn = $('#goBtn');
@@ -1140,7 +1140,7 @@ window.startBatchJobs = async function() {
             }
         });
 
-        toast(`${urls.length} clip${urls.length > 1 ? 'uri pornite' : ' pornit'} în procesare! ⚡`);
+        toast(`${urls.length} video${urls.length > 1 ? 's' : ''} started in processing! ⚡`);
         pollJobs();
     } catch (e) {
         toast(e.message);
@@ -1157,27 +1157,27 @@ async function pollJobs() {
 }
 
 function openScheduleModal(c) {
-    $('#uTitleHd').textContent = 'Program de postare (Speed Ultra)';
-    $('#uSubHd').innerHTML = 'Publică automat pe conturile conectate.';
+    $('#uTitleHd').textContent = 'Posting Schedule (Speed Ultra)';
+    $('#uSubHd').innerHTML = 'Publish automatically to connected accounts at peak hours.';
     $('#uBody').innerHTML = `
         <div class="usec">
-            <div class="field-label">Conturi active</div>
+            <div class="field-label">Active Accounts</div>
             <div class="uacc-row"><input type="checkbox" checked> <b>@clipy_studio</b> (TikTok)</div>
             <div class="uacc-row"><input type="checkbox" checked> <b>Clipy Shorts</b> (YouTube)</div>
         </div>
         <div class="usec">
-            <label class="field-label" for="schTitle">Titlu postare</label>
-            <input id="schTitle" class="uinput" value="${esc((c.job.result && c.job.result.title) || 'Clip Viral Clipy')}">
+            <label class="field-label" for="schTitle">Post Title</label>
+            <input id="schTitle" class="uinput" value="${esc((c.job.result && c.job.result.title) || 'Viral Video Clipy')}">
         </div>
     `;
     $('#uFoot').innerHTML = `
-        <button class="gen-btn" id="confirmScheduleBtn">Confirmă programarea</button>
+        <button class="gen-btn" id="confirmScheduleBtn">Confirm Schedule</button>
     `;
     $('#ultra-modal').hidden = false;
 
     $('#confirmScheduleBtn').onclick = () => {
         $('#ultra-modal').hidden = true;
-        toast('Clipul a fost adăugat în coada de postare!');
+        toast('Video added to posting queue!');
     };
 }
 
@@ -1200,15 +1200,15 @@ async function loadHistory() {
     const d = await api('/api/history');
     $('#hist').innerHTML = (d.items && d.items.length)
         ? d.items.map(h => `<div class="hrow"><div class="hmain">${esc(h.url)}</div></div>`).join('')
-        : '<div class="pad">Nimic în istoric încă.</div>';
+        : '<div class="pad">No history yet.</div>';
 }
 function loadQueue() {
     $('#queue').innerHTML = `
         <div class="uprog">
-            <div class="uprog-hd"><div class="field-label">Program activ</div></div>
+            <div class="uprog-hd"><div class="field-label">Active Schedule</div></div>
             <div class="uslots"><span class="uslot mono">12:00</span><span class="uslot mono">19:00</span></div>
         </div>
-        <div class="qrow"><div class="qwhen">azi, 19:00</div><div class="qmain"><div class="qtitle">Viral Short #1</div></div><span class="qstat ok">Programat</span></div>
+        <div class="qrow"><div class="qwhen">today, 19:00</div><div class="qmain"><div class="qtitle">Viral Short #1</div></div><span class="qstat ok">Scheduled</span></div>
     `;
 }
 
@@ -1257,22 +1257,20 @@ function loadSampleVideoIntoStudio() {
     }
     if (window.Timeline) {
         Timeline.state.duration = 15.0;
-        Timeline.state.clips = [{ id: 'clip-sample', start: 0, end: 15.0, name: 'Video Exemplu HD' }];
+        Timeline.state.clips = [{ id: 'clip-sample', start: 0, end: 15.0, name: 'Sample HD Video' }];
         Timeline.renderRuler();
         Timeline.renderTracks();
         Timeline.updatePlayhead();
     }
-    toast('Video exemplu încărcat în Clipy Studio!');
+    toast('Sample video loaded into Clipy Studio!');
 }
 
 function autoRemoveSilence() {
-    toast('Auto-Cut Liniște: analiză tăceri pauze... ✂️');
+    toast('Auto-Cut Silence: analyzing dead pauses... ✂️');
     setTimeout(() => {
         if (window.Timeline && Timeline.state.clips.length) {
-            const cur = Timeline.state.clips[0];
-            const mid = (cur.start + cur.end) / 2;
             Timeline.splitAtPlayhead();
-            toast('Pauzele lungi au fost decupate automat pe timeline!');
+            toast('Dead pauses automatically cut on timeline!');
         }
     }, 600);
 }
@@ -1280,9 +1278,9 @@ function autoRemoveSilence() {
 function addStudioBlurBox() {
     if (window.activeStudioCard) {
         StagePlayer.addBlurBox(window.activeStudioCard);
-        toast('Zonă blur adăugată pe player!');
+        toast('Blur box added to player!');
     } else {
-        toast('Selectează sau generează un clip pentru a adăuga blur.');
+        toast('Please generate or select a video first.');
     }
 }
 
@@ -1291,7 +1289,7 @@ function toggleStudioMirror() {
     if (!flip) return;
     const isMirrored = flip.style.transform === 'scaleX(-1)';
     flip.style.transform = isMirrored ? '' : 'scaleX(-1)';
-    toast(isMirrored ? 'Oglindire dezactivată' : 'Oglindire activată');
+    toast(isMirrored ? 'Mirror flip disabled' : 'Mirror flip enabled');
 }
 
 // Mode Switcher: Studio Pro vs Classic Generator
@@ -1334,7 +1332,7 @@ function activateDrawerTab(tabName) {
 const ASPECT_PRESETS = [
     { ratio: '9:16', label: 'Vertical', cls: 'aspect-9-16' },
     { ratio: '16:9', label: 'Widescreen', cls: 'aspect-16-9' },
-    { ratio: '1:1', label: 'Pătrat', cls: 'aspect-1-1' }
+    { ratio: '1:1', label: 'Square', cls: 'aspect-1-1' }
 ];
 let currentAspectIdx = 0;
 
@@ -1348,7 +1346,7 @@ function cycleAspectRatio() {
     }
     $('#aspectRatioLabel').textContent = preset.ratio;
     $('#aspectRatioSub').textContent = preset.label;
-    toast(`Raport aspect: ${preset.ratio} (${preset.label})`);
+    toast(`Aspect ratio: ${preset.ratio} (${preset.label})`);
 }
 
 // Inspector Preset Rendering
@@ -1450,7 +1448,7 @@ function initCinemaControls() {
     if (volBtn) {
         volBtn.onclick = () => {
             vid.muted = !vid.muted;
-            toast(vid.muted ? 'Sunet oprit' : 'Sunet pornit');
+            toast(vid.muted ? 'Sound muted' : 'Sound unmuted');
         };
     }
 
@@ -1470,7 +1468,7 @@ function initCinemaControls() {
             if (card) {
                 VideoExporter.exportAndDownload(card);
             } else {
-                toast('Procesează sau încarcă un videoclip înainte de export! ⚡');
+                toast('Please process or select a video before exporting! ⚡');
             }
         };
     }
@@ -1549,34 +1547,34 @@ const DEFAULT_CONFIG = {
     cost: 0,
     free: true,
     defaultSpeed: 1.35,
-    defaultVoice: "ro_emil",
+    defaultVoice: "en_christopher",
     langs: [
-        { key: "română", label: "Română", flag: "🇷🇴" },
-        { key: "engleză", label: "Engleză", flag: "🇬🇧" },
-        { key: "spaniolă", label: "Spaniolă", flag: "🇪🇸" },
-        { key: "germană", label: "Germană", flag: "🇩🇪" },
-        { key: "franceză", label: "Franceză", flag: "🇫🇷" },
-        { key: "italiană", label: "Italiană", flag: "🇮🇹" }
+        { key: "engleză", label: "English", flag: "🇬🇧" },
+        { key: "română", label: "Romanian", flag: "🇷🇴" },
+        { key: "spaniolă", label: "Spanish", flag: "🇪🇸" },
+        { key: "germană", label: "German", flag: "🇩🇪" },
+        { key: "franceză", label: "French", flag: "🇫🇷" },
+        { key: "italiană", label: "Italian", flag: "🇮🇹" }
     ],
     voices: [
-        { key: "ro_emil", label: "Emil", tag: "M · clar, narativ", lang: "română" },
-        { key: "ro_alina", label: "Alina", tag: "F · caldă, naturală", lang: "română" },
-        { key: "ro_radu", label: "Radu", tag: "M · tânăr, energic", lang: "română" },
-        { key: "ro_delia", label: "Delia", tag: "F · radio, podcast", lang: "română" },
-        { key: "en_christopher", label: "Christopher", tag: "M · autoritar, povestitor", lang: "engleză" },
-        { key: "en_jenny", label: "Jenny", tag: "F · naturală, conversațională", lang: "engleză" },
-        { key: "en_guy", label: "Guy", tag: "M · pasionat, dinamic", lang: "engleză" },
-        { key: "en_aria", label: "Aria", tag: "F · luminoasă, energică", lang: "engleză" }
+        { key: "en_christopher", label: "Christopher", tag: "M · Authoritative, Storyteller", lang: "engleză" },
+        { key: "en_jenny", label: "Jenny", tag: "F · Natural, Conversational", lang: "engleză" },
+        { key: "en_guy", label: "Guy", tag: "M · Passionate, Dynamic", lang: "engleză" },
+        { key: "en_aria", label: "Aria", tag: "F · Bright, Energetic", lang: "engleză" },
+        { key: "ro_emil", label: "Emil", tag: "M · Clear, Narrative", lang: "română" },
+        { key: "ro_alina", label: "Alina", tag: "F · Warm, Natural", lang: "română" },
+        { key: "ro_radu", label: "Radu", tag: "M · Young, Energetic", lang: "română" },
+        { key: "ro_delia", label: "Delia", tag: "F · Radio, Podcast", lang: "română" }
     ],
     captionPresets: [
-        { key: "boxverde", label: "Box Verde", text: "#07130d", font: "Impact" },
-        { key: "galben", label: "Galben Viral", text: "#000000", font: "Impact" },
+        { key: "boxverde", label: "Green Box", text: "#07130d", font: "Impact" },
+        { key: "galben", label: "Yellow Viral", text: "#000000", font: "Impact" },
         { key: "neon", label: "Neon Glow", text: "#ffffff", font: "Geist" },
         { key: "comic", label: "Comic Bold", text: "#ffffff", font: "Bangers" },
-        { key: "clasic", label: "Clasic", text: "#ffffff", font: "Impact" },
+        { key: "clasic", label: "Classic", text: "#ffffff", font: "Impact" },
         { key: "bubble", label: "Bubble", text: "#ffffff", font: "Luckiest Guy" },
-        { key: "boxnegru", label: "Box Negru", text: "#ffffff", font: "Geist" },
-        { key: "simplu", label: "Simplu", text: "#ffffff", font: "Geist" }
+        { key: "boxnegru", label: "Black Box", text: "#ffffff", font: "Geist" },
+        { key: "simplu", label: "Clean", text: "#ffffff", font: "Geist" }
     ]
 };
 
@@ -1625,10 +1623,10 @@ const DEFAULT_CONFIG = {
             const v = ($('#backendUrlInput').value || '').trim().replace(/\/+$/, '');
             if (v) {
                 localStorage.setItem('clipy_backend_url', v);
-                toast('Server salvat! Reîncărcare... ⚡');
+                toast('Server saved! Reloading... ⚡');
             } else {
                 localStorage.removeItem('clipy_backend_url');
-                toast('Configurație resetată.');
+                toast('Configuration reset.');
             }
             setTimeout(() => location.reload(), 400);
         };
@@ -1636,7 +1634,7 @@ const DEFAULT_CONFIG = {
     if ($('#connectTunnelBtn')) {
         $('#connectTunnelBtn').onclick = () => {
             localStorage.removeItem('clipy_backend_url');
-            toast('Conexiune Vercel activată! Reîncărcare... ⚡');
+            toast('Vercel connection active! Reloading... ⚡');
             setTimeout(() => location.reload(), 400);
         };
     }
@@ -1652,17 +1650,17 @@ const DEFAULT_CONFIG = {
         try {
             const h = await api('/api/health').catch(() => null);
             if (h && h.ok && !h.static) {
-                txt.textContent = API_BASE ? 'Server Cloud' : 'Server Activ';
+                txt.textContent = API_BASE ? 'Cloud Server' : 'Server Active';
                 window.isBackendStatic = false;
             } else if (h && h.static) {
-                txt.textContent = 'Conectează Server';
+                txt.textContent = 'Connect Server';
                 window.isBackendStatic = true;
             } else {
-                txt.textContent = 'Server Inactiv';
+                txt.textContent = 'Server Offline';
                 window.isBackendStatic = false;
             }
         } catch {
-            txt.textContent = 'Server Inactiv';
+            txt.textContent = 'Server Offline';
             window.isBackendStatic = false;
         }
     }

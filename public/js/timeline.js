@@ -9,7 +9,7 @@
             selectedTrack: 'video',
             selectedClipId: 'clip-1',
             clips: [
-                { id: 'clip-1', start: 0.0, end: 15.0, name: 'Video Principal' }
+                { id: 'clip-1', start: 0.0, end: 15.0, name: 'Main Video' }
             ],
             subtitles: [],
             audioTrack: null,
@@ -218,7 +218,7 @@
             if (!track) return;
             const words = this.state.subtitles;
             if (!words || !words.length) {
-                track.innerHTML = `<div style="font-size:0.65rem; color:#64748b; padding:4px 8px;">Nicio subtitrare generată încă</div>`;
+                track.innerHTML = `<div style="font-size:0.65rem; color:#64748b; padding:4px 8px;">No captions generated yet</div>`;
                 return;
             }
 
@@ -283,7 +283,7 @@
 
             track.innerHTML = `
                 <div style="position:absolute; left:0; width:${width}px; height:28px; background:linear-gradient(90deg, #065f46, #059669); border:1px solid #10b981; border-radius:5px; padding:2px 10px; display:flex; align-items:center; justify-content:space-between; color:#fff; overflow:hidden;">
-                    <span style="font-size:0.65rem; font-weight:700; white-space:nowrap;">Dublaj Voce AI (Sincronizat)</span>
+                    <span style="font-size:0.65rem; font-weight:700; white-space:nowrap;">AI Dubbed Voice (Synced)</span>
                     <svg width="220" height="18" viewBox="0 0 220 18" fill="none" stroke="#a7f3d0" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;">
                         <path d="M2 9h4M10 5v8M16 2v14M22 6v6M28 8v2M34 4v10M40 1v16M46 7v4M52 9h4M60 4v10M66 2v14M72 7v4M78 9h4M86 5v8M92 1v16M98 6v6M104 8v2M110 3v12M116 1v16M122 7v4M128 9h4M136 4v10M142 2v14M148 7v4M154 9h4M162 6v6M168 2v14M174 8v2M182 5v8M188 1v16M194 7v4M200 9h4M208 4v10M214 2v14"></path>
                     </svg>
@@ -300,7 +300,7 @@
 
             track.innerHTML = `
                 <div style="position:absolute; left:${left}px; width:${width}px; height:22px; background:repeating-linear-gradient(45deg, #7c3aed, #7c3aed 8px, #6d28d9 8px, #6d28d9 16px); border:1px solid #c4b5fd; border-radius:4px; padding:2px 6px; display:flex; align-items:center; font-size:0.62rem; font-weight:700; color:#fff; overflow:hidden; white-space:nowrap;">
-                    Zonă Blur Logo
+                    Blur Box Zone
                 </div>
             `;
         },
@@ -315,7 +315,7 @@
             // Find which clip currently covers t
             const clipIdx = this.state.clips.findIndex(c => t > (c.start + 0.1) && t < (c.end - 0.1));
             if (clipIdx === -1) {
-                if (window.toast) window.toast('Plasează cursorul în interiorul unui clip pentru Split.');
+                if (window.toast) window.toast('Move playhead inside a clip to Split.');
                 return;
             }
 
@@ -327,19 +327,19 @@
                 id: 'clip-' + Date.now().toString(36),
                 start: t,
                 end: oldEnd,
-                name: `${orig.name} (Partea 2)`
+                name: `${orig.name} (Part 2)`
             };
 
             this.state.clips.splice(clipIdx + 1, 0, newClip);
             this.state.selectedClipId = newClip.id;
 
             this.renderVideoTrack();
-            if (window.toast) window.toast('Clip tăiat (Split) la ' + this.formatTime(t) + ' ⚡');
+            if (window.toast) window.toast('Clip split at ' + this.formatTime(t) + ' ⚡');
         },
 
         deleteSelectedClip() {
             if (this.state.clips.length <= 1) {
-                if (window.toast) window.toast('Nu poți șterge singurul clip din proiect.');
+                if (window.toast) window.toast('Cannot delete the only clip in project.');
                 return;
             }
 
@@ -361,7 +361,7 @@
 
             this.renderRuler();
             this.renderTracks();
-            if (window.toast) window.toast('Secvență ștearsă și aliniată.');
+            if (window.toast) window.toast('Sequence deleted and ripple shifted.');
         },
 
         duplicateSelectedClip() {
@@ -374,7 +374,7 @@
                 id: 'clip-' + Date.now().toString(36),
                 start: this.state.duration,
                 end: this.state.duration + length,
-                name: `${orig.name} (Copie)`
+                name: `${orig.name} (Copy)`
             };
 
             this.state.clips.push(newClip);
@@ -383,7 +383,7 @@
 
             this.renderRuler();
             this.renderTracks();
-            if (window.toast) window.toast('Clip duplicat pe timeline.');
+            if (window.toast) window.toast('Clip duplicated to timeline.');
         },
 
         formatTime(sec) {
