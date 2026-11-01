@@ -41,6 +41,7 @@
                 snapBtn.onclick = () => {
                     this.state.snapping = !this.state.snapping;
                     snapBtn.classList.toggle('active', this.state.snapping);
+                    if (window.toast) window.toast(this.state.snapping ? 'Timeline Magnet Snapping: ON 🧲' : 'Timeline Magnet Snapping: OFF');
                 };
             }
 
@@ -293,12 +294,12 @@
                 const shadow = isSelected ? '0 0 12px rgba(124,58,237,0.45)' : 'none';
 
                 return `
-                    <div class="clip-item clip-video" data-id="${clip.id}" onclick="Timeline.selectClip('${clip.id}')" style="position:absolute; left:${left}px; width:${width}px; height:44px; background:linear-gradient(135deg, #1e3a8a, #2563eb); border:${border}; border-radius:6px; padding:4px 8px; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; cursor:pointer; box-shadow:${shadow};">
-                        <div style="display:flex; justify-content:space-between; font-size:0.66rem; font-weight:700; color:#fff;">
+                    <div class="clip-item clip-video" data-id="${clip.id}" title="Click to select · Drag horizontally to move (Snap to Grid)" style="position:absolute; left:${left}px; width:${width}px; height:44px; background:linear-gradient(135deg, #1e3a8a, #2563eb); border:${border}; border-radius:6px; padding:4px 8px; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; cursor:grab; box-shadow:${shadow};">
+                        <div style="display:flex; justify-content:space-between; font-size:0.66rem; font-weight:700; color:#fff; pointer-events:none;">
                             <span>${this.escapeHtml(clip.name)}</span>
                             <span style="color:#93c5fd; font-family:'JetBrains Mono',monospace; font-size:0.58rem;">${this.formatTime(clip.start)} - ${this.formatTime(clip.end)}</span>
                         </div>
-                        <div style="height:12px; background:rgba(0,0,0,0.25); border-radius:3px; display:flex; gap:4px; padding:1px; opacity:0.6;">
+                        <div style="height:12px; background:rgba(0,0,0,0.25); border-radius:3px; display:flex; gap:4px; padding:1px; opacity:0.6; pointer-events:none;">
                             <div style="flex:1; background:rgba(255,255,255,0.18); border-radius:1px;"></div>
                             <div style="flex:1; background:rgba(255,255,255,0.18); border-radius:1px;"></div>
                             <div style="flex:1; background:rgba(255,255,255,0.18); border-radius:1px;"></div>
@@ -306,6 +307,140 @@
                     </div>
                 `;
             }).join('');
+
+            // Bind horizontal drag & magnetic snapping to each clip
+            track.querySelectorAll('.clip-item.clip-video').forEach(el => {
+                const clipId = el.dataset.id;
+                const clip = this.state.clips.find(c => c.id === clipId);
+                if (clip) this.bindClipDrag(el, clip);
+            });
+        },
+
+        bindClipDrag(el, clip) {
+            let startClientX = 0;
+            let origStart = clip.start;
+            let origEnd = clip.end;
+            const clipDur = origEnd - origStart;
+            let isDragging = false;
+            let hasMoved = false;
+
+            const snapLine = document.getElementById('timelineSnapLine');
+
+            const onPointerMove = (e) => {
+                const deltaPx = e.clientX - startClientX;
+                if (!isDragging && Math.abs(deltaPx) > 3) {
+                    isDragging = true;
+                    hasMoved = true;
+                    el.classList.add('dragging');
+                    this.state.selectedClipId = clip.id;
+                }
+                if (!isDragging) return;
+
+                const deltaSec = deltaPx / this.state.zoom;
+                let newStart = Math.max(0, origStart + deltaSec);
+                let isSnapped = false;
+                let snapTime = newStart;
+
+                // Magnetic Snapping (Snap to Grid, Snap to 0:00, Snap to Playhead, Snap to other clips)
+                if (this.state.snapping) {
+                    const snapDist = 12 / this.state.zoom; // ~12px magnetic snap zone
+
+                    // 1. Snap to start of timeline (0:00)
+                    if (newStart < snapDist) {
+                        newStart = 0;
+                        isSnapped = true;
+                        snapTime = 0;
+                    }
+
+                    // 2. Snap to Playhead needle
+                    if (Math.abs(newStart - this.state.currentTime) < snapDist) {
+                        newStart = this.state.currentTime;
+                        isSnapped = true;
+                        snapTime = newStart;
+                    } else if (Math.abs((newStart + clipDur) - this.state.currentTime) < snapDist) {
+                        newStart = this.state.currentTime - clipDur;
+                        isSnapped = true;
+                        snapTime = newStart + clipDur;
+                    }
+
+                    // 3. Snap to other clip boundaries (gapless snapping)
+                    this.state.clips.forEach(other => {
+                        if (other.id === clip.id) return;
+                        if (Math.abs(newStart - other.end) < snapDist) {
+                            newStart = other.end;
+                            isSnapped = true;
+                            snapTime = other.end;
+                        }
+                        if (Math.abs((newStart + clipDur) - other.start) < snapDist) {
+                            newStart = other.start - clipDur;
+                            isSnapped = true;
+                            snapTime = other.start;
+                        }
+                    });
+
+                    // 4. Snap to 1-second grid intervals on ruler
+                    const nearestSecond = Math.round(newStart);
+                    if (!isSnapped && Math.abs(newStart - nearestSecond) < (8 / this.state.zoom)) {
+                        newStart = nearestSecond;
+                        isSnapped = true;
+                        snapTime = nearestSecond;
+                    }
+                }
+
+                newStart = Math.max(0, newStart);
+                clip.start = newStart;
+                clip.end = newStart + clipDur;
+
+                // Move visually
+                el.style.left = `${newStart * this.state.zoom}px`;
+
+                // Show snap line
+                if (snapLine) {
+                    if (isSnapped) {
+                        snapLine.style.left = `${125 + (snapTime * this.state.zoom)}px`;
+                        snapLine.classList.add('visible');
+                    } else {
+                        snapLine.classList.remove('visible');
+                    }
+                }
+            };
+
+            const onPointerUp = (e) => {
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+                window.removeEventListener('pointercancel', onPointerUp);
+
+                if (snapLine) snapLine.classList.remove('visible');
+                el.classList.remove('dragging');
+
+                if (isDragging) {
+                    isDragging = false;
+                    this.state.clips.sort((a, b) => a.start - b.start);
+                    const maxEnd = Math.max(...this.state.clips.map(c => c.end));
+                    this.state.duration = Math.max(maxEnd, 5.0);
+
+                    this.renderRuler();
+                    this.renderTracks();
+                    this.setTime(clip.start, true);
+                    if (window.toast) window.toast(`Clip moved to ${this.formatTime(clip.start)} (Snapped to Grid) 🧲`);
+                } else if (!hasMoved) {
+                    this.selectClip(clip.id);
+                }
+            };
+
+            el.addEventListener('pointerdown', (e) => {
+                if (e.button !== 0) return;
+                e.stopPropagation();
+                startClientX = e.clientX;
+                origStart = clip.start;
+                origEnd = clip.end;
+                isDragging = false;
+                hasMoved = false;
+
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('pointercancel', onPointerUp);
+            });
         },
 
         renderAudioTrack() {

@@ -626,55 +626,193 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
+    position: relative;
+    padding: 8px 16px 10px;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Stage Wrap: Maximizes video preview size into all available space */
+.studio-stage-wrap {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
     justify-content: center;
     position: relative;
-    padding: 16px;
-    min-width: 0;
+    overflow: hidden;
+    padding: 4px;
 }
 
 .studio-viewport {
     background: #000;
-    border-radius: 8px;
+    border-radius: 10px;
     position: relative;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s cubic-bezier(0.16, 1, 0.3, 1), aspect-ratio 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 100%;
+    max-width: 100%;
 }
 
 .studio-viewport.aspect-9-16 {
-    height: 310px;
-    aspect-ratio: 9/16;
-}
-.studio-viewport.aspect-16-9 {
-    width: 460px;
-    max-height: 290px;
-    aspect-ratio: 16/9;
-}
-.studio-viewport.aspect-1-1 {
-    height: 300px;
-    aspect-ratio: 1/1;
-}
-.studio-viewport.aspect-4-5 {
-    height: 310px;
-    aspect-ratio: 4/5;
-}
-.studio-viewport.aspect-21-9 {
-    width: 480px;
-    max-height: 240px;
-    aspect-ratio: 21/9;
+    aspect-ratio: 9 / 16;
+    height: 100%;
+    max-height: calc(100vh - 325px);
+    width: auto;
 }
 
-/* Empty Viewport: Spacious and comfortable dropzone card (not squished to 174px!) */
+.studio-viewport.aspect-16-9 {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    max-width: min(calc((100vh - 325px) * 16 / 9), 960px);
+    max-height: calc(100vh - 325px);
+    height: auto;
+}
+
+.studio-viewport.aspect-1-1 {
+    aspect-ratio: 1 / 1;
+    height: 100%;
+    max-height: calc(100vh - 325px);
+    width: auto;
+}
+
+.studio-viewport.aspect-4-5 {
+    aspect-ratio: 4 / 5;
+    height: 100%;
+    max-height: calc(100vh - 325px);
+    width: auto;
+}
+
+.studio-viewport.aspect-21-9 {
+    aspect-ratio: 21 / 9;
+    width: 100%;
+    max-width: min(calc((100vh - 325px) * 21 / 9), 1100px);
+    max-height: calc(100vh - 325px);
+    height: auto;
+}
+
+/* Empty Viewport: Spacious and comfortable dropzone card */
 .studio-viewport.empty-viewport {
-    width: min(520px, 94%) !important;
-    height: 330px !important;
+    width: min(640px, 94%) !important;
+    height: min(400px, calc(100vh - 330px)) !important;
     aspect-ratio: unset !important;
     max-height: none !important;
+}
+
+/* Canvas Composition Grid (Rule of Thirds & Snap Alignment) */
+.canvas-grid-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    border: 1px dashed rgba(56, 189, 248, 0.22);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.canvas-grid-overlay.visible {
+    opacity: 1;
+}
+.canvas-grid-overlay .grid-cell {
+    border-right: 1px dashed rgba(56, 189, 248, 0.26);
+    border-bottom: 1px dashed rgba(56, 189, 248, 0.26);
+}
+.canvas-grid-overlay .grid-cell:nth-child(3n) {
+    border-right: none;
+}
+.canvas-grid-overlay .grid-cell:nth-child(n+7) {
+    border-bottom: none;
+}
+
+/* Magnetic Alignment Snap Guides on Canvas */
+.studio-snap-guide {
+    position: absolute;
+    pointer-events: none;
+    z-index: 45;
+    display: none;
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8, 0 0 16px rgba(56, 189, 248, 0.6);
+}
+.studio-snap-guide.snap-v {
+    width: 1.5px;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.studio-snap-guide.snap-h {
+    height: 1.5px;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.studio-snap-guide.active {
+    display: block;
+}
+
+/* Snap Indicator Badge */
+.studio-snap-badge {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(14, 165, 233, 0.95);
+    color: #fff;
+    font-size: 0.64rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 99px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    z-index: 50;
+    pointer-events: none;
+    display: none;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.02em;
+}
+.studio-snap-badge.visible {
+    display: flex;
+}
+
+/* Timeline Snap Line */
+.timeline-snap-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #a855f7;
+    box-shadow: 0 0 8px #a855f7;
+    z-index: 32;
+    pointer-events: none;
+    display: none;
+}
+.timeline-snap-line.visible {
+    display: block;
+}
+
+/* Draggable timeline clip */
+.clip-item.clip-video {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+.clip-item.clip-video:active, .clip-item.clip-video.dragging {
+    cursor: grabbing;
+    z-index: 20;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 2px #a78bfa !important;
+    opacity: 0.92;
 }
 
 /* Dropdown Menu for Aspect Ratio Formats */
@@ -1025,7 +1163,14 @@ input[type=range].pro-slider::-webkit-slider-thumb {
 
 /* Fullscreen app container */
 #appRoot {
+    height: 100vh;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+body.clipy-studio-pro {
+    height: 100vh;
+    overflow: hidden;
 }

@@ -451,8 +451,8 @@
 
         <!-- 3. Center Cinema Canvas -->
         <main class="studio-canvas" id="studioCanvasArea">
-            <!-- Floating Canvas Toolbar: Fit, Crop/Fill, Zoom & Rotate -->
-            <div class="studio-canvas-toolbar" id="studioCanvasToolbar" style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px; background: rgba(22, 24, 33, 0.92); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px 10px; z-index: 20;">
+            <!-- Floating Canvas Toolbar: Fit, Crop/Fill, Zoom, Rotate, Mirror & Grid Snapping -->
+            <div class="studio-canvas-toolbar" id="studioCanvasToolbar" style="margin-bottom: 6px; display: flex; align-items: center; gap: 6px; background: rgba(22, 24, 33, 0.92); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px 10px; z-index: 20;">
                 <button type="button" class="canvas-tool-btn active" id="btnFitMode" onclick="setVideoFitMode('contain')" title="Fit Entire Video (Keep All Content)">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M8 3v18"></path><path d="M16 3v18"></path></svg>
                     <span>Fit</span>
@@ -466,6 +466,10 @@
                 <input type="range" class="pro-slider" id="canvasZoomSlider" min="1" max="2.5" step="0.05" value="1" style="width: 65px;" oninput="setVideoZoom(this.value)" title="Zoom / Crop Into Frame">
                 <span id="canvasZoomVal" style="font-size: 0.65rem; color: #cbd5e1; min-width: 26px;">1.0×</span>
                 <div style="height: 14px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+                <button type="button" class="canvas-tool-btn active" id="btnToggleGrid" onclick="toggleCanvasGrid()" title="Toggle Grid & Snap-to-Center (Span to Grid)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                    <span>Grid & Snap</span>
+                </button>
                 <button type="button" class="canvas-tool-btn" id="btnCanvasMirror" onclick="toggleStudioMirror()" title="Mirror Flip Video">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path></svg>
                     <span>Mirror</span>
@@ -476,65 +480,83 @@
                 </button>
             </div>
 
-            <!-- Studio Viewport with aspect ratio -->
-            <div class="studio-viewport empty-viewport aspect-9-16" id="studioViewport">
-                <!-- Floating Title Header (hidden initially until video is loaded) -->
-                <div class="studio-title-pill" id="studioTitlePill" style="display: none;">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                    </svg>
-                    <span id="studioTitleText">Video Project</span>
-                </div>
-
-                <!-- Video Stage -->
-                <div class="cinema-stage stage" id="cinemaStage" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: grab;">
-                    <div class="flip" id="cinemaFlip" style="position: absolute; inset: 0; width: 100%; height: 100%;">
-                        <video class="mask-bg" id="cinemaMaskBg" muted playsinline preload="auto" hidden style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(20px); transform: scale(1.6);"></video>
-                        <video class="main" id="cinemaMainVideo" playsinline preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: transform 0.05s ease-out;"></video>
-                    </div>
-                    <audio class="voiceover" id="cinemaVoiceover" preload="auto" muted hidden></audio>
-                    <div class="boxes" id="cinemaBoxes" style="position: absolute; inset: 0; pointer-events: auto;"></div>
-                    <div class="capview" id="cinemaCapview" style="position: absolute; left: 50%; top: 72%; transform: translate(-50%, -50%); width: 88%; text-align: center; pointer-events: auto; z-index: 50; cursor: grab;" title="Click & Drag to reposition subtitles"></div>
-                </div>
-
-                <!-- Empty Project Welcome / Dropzone Overlay -->
-                <div class="studio-empty-state" id="studioEmptyState">
-                    <div style="width: 56px; height: 56px; border-radius: 14px; background: rgba(124, 58, 237, 0.16); border: 1.5px dashed rgba(167, 139, 250, 0.5); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; color: #a78bfa;">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
+            <!-- Stage Wrap: Fills available space and eliminates empty borders -->
+            <div class="studio-stage-wrap" id="studioStageWrap">
+                <!-- Studio Viewport with responsive aspect ratio -->
+                <div class="studio-viewport empty-viewport aspect-9-16" id="studioViewport">
+                    <!-- Floating Title Header -->
+                    <div class="studio-title-pill" id="studioTitlePill" style="display: none;">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                         </svg>
+                        <span id="studioTitleText">Video Project</span>
                     </div>
-                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0 0 8px 0;">Start Your Video Project</h3>
-                    <p style="font-size: 0.8rem; color: #94a3b8; max-width: 380px; margin: 0 0 20px 0; line-height: 1.45;">
-                        Drag and drop any video file here, paste a video link, or load a sample video to start editing.
-                    </p>
-                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
-                        <button type="button" class="clipy-btn" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-weight: 700; padding: 9px 22px; font-size: 0.82rem; border-radius: 8px; box-shadow: 0 4px 16px rgba(124,58,237,0.4); cursor: pointer; border: none;" onclick="$('#fileInput').click()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                            Upload Video File
-                        </button>
-                        <button type="button" class="clipy-btn" style="background: rgba(255,255,255,0.06); padding: 9px 16px; font-size: 0.8rem;" onclick="loadSampleVideoIntoStudio()">
-                            Try Demo Sample
-                        </button>
-                    </div>
-                    <div style="display: flex; gap: 8px; width: 100%; max-width: 360px;">
-                        <input type="text" id="emptyUrlInput" placeholder="Paste YouTube, TikTok or Instagram link..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 7px 12px; font-size: 0.76rem; color: #fff; outline: none;" onkeydown="if(event.key==='Enter') window.importUrlFromEmpty();">
-                        <button type="button" class="clipy-btn" style="padding: 7px 14px; font-size: 0.76rem; font-weight: 700; background: #7c3aed; color: #fff; border: none;" onclick="window.importUrlFromEmpty()">Import</button>
-                    </div>
-                </div>
 
-                <!-- Active Selection Transform Box -->
-                <div class="studio-bbox" id="studioBbox" style="display: none;">
-                    <div class="studio-bbox-dot tl"></div>
-                    <div class="studio-bbox-dot tr"></div>
-                    <div class="studio-bbox-dot bl"></div>
-                    <div class="studio-bbox-dot br"></div>
-                    <div id="studioBboxText"></div>
-                </div>
+                    <!-- Video Stage -->
+                    <div class="cinema-stage stage" id="cinemaStage" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: grab;">
+                        <div class="flip" id="cinemaFlip" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+                            <video class="mask-bg" id="cinemaMaskBg" muted playsinline preload="auto" hidden style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(20px); transform: scale(1.6);"></video>
+                            <video class="main" id="cinemaMainVideo" playsinline preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: transform 0.05s ease-out;"></video>
+                        </div>
+                        <audio class="voiceover" id="cinemaVoiceover" preload="auto" muted hidden></audio>
+                        <div class="boxes" id="cinemaBoxes" style="position: absolute; inset: 0; pointer-events: auto;"></div>
+                        <div class="capview" id="cinemaCapview" style="position: absolute; left: 50%; top: 72%; transform: translate(-50%, -50%); width: 88%; text-align: center; pointer-events: auto; z-index: 50; cursor: grab;" title="Click & Drag to reposition subtitles"></div>
 
-                <div></div>
+                        <!-- Canvas Composition Grid Overlay (Rule of Thirds) -->
+                        <div class="canvas-grid-overlay visible" id="canvasGridOverlay">
+                            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+                            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+                            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+                        </div>
+
+                        <!-- Magnetic Alignment Snap Guides -->
+                        <div class="studio-snap-guide snap-v" id="snapGuideV"></div>
+                        <div class="studio-snap-guide snap-h" id="snapGuideH"></div>
+                        <div class="studio-snap-badge" id="snapBadge">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.35-6.35a2.9 2.9 0 0 0-4.1-4.1L5 14"></path></svg>
+                            <span id="snapBadgeText">Centered 🧲</span>
+                        </div>
+                    </div>
+
+                    <!-- Empty Project Welcome / Dropzone Overlay -->
+                    <div class="studio-empty-state" id="studioEmptyState">
+                        <div style="width: 56px; height: 56px; border-radius: 14px; background: rgba(124, 58, 237, 0.16); border: 1.5px dashed rgba(167, 139, 250, 0.5); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; color: #a78bfa;">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin: 0 0 8px 0;">Start Your Video Project</h3>
+                        <p style="font-size: 0.8rem; color: #94a3b8; max-width: 380px; margin: 0 0 20px 0; line-height: 1.45;">
+                            Drag and drop any video file here, paste a video link, or load a sample video to start editing.
+                        </p>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+                            <button type="button" class="clipy-btn" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-weight: 700; padding: 9px 22px; font-size: 0.82rem; border-radius: 8px; box-shadow: 0 4px 16px rgba(124,58,237,0.4); cursor: pointer; border: none;" onclick="$('#fileInput').click()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                Upload Video File
+                            </button>
+                            <button type="button" class="clipy-btn" style="background: rgba(255,255,255,0.06); padding: 9px 16px; font-size: 0.8rem;" onclick="loadSampleVideoIntoStudio()">
+                                Try Demo Sample
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 8px; width: 100%; max-width: 360px;">
+                            <input type="text" id="emptyUrlInput" placeholder="Paste YouTube, TikTok or Instagram link..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 7px 12px; font-size: 0.76rem; color: #fff; outline: none;" onkeydown="if(event.key==='Enter') window.importUrlFromEmpty();">
+                            <button type="button" class="clipy-btn" style="padding: 7px 14px; font-size: 0.76rem; font-weight: 700; background: #7c3aed; color: #fff; border: none;" onclick="window.importUrlFromEmpty()">Import</button>
+                        </div>
+                    </div>
+
+                    <!-- Active Selection Transform Box -->
+                    <div class="studio-bbox" id="studioBbox" style="display: none;">
+                        <div class="studio-bbox-dot tl"></div>
+                        <div class="studio-bbox-dot tr"></div>
+                        <div class="studio-bbox-dot bl"></div>
+                        <div class="studio-bbox-dot br"></div>
+                        <div id="studioBboxText"></div>
+                    </div>
+
+                    <div></div>
+                </div>
             </div>
 
             <!-- Floating Glassmorphic Playback Bar -->
@@ -744,6 +766,9 @@
                     </svg>
                 </div>
             </div>
+
+            <!-- Magnetic Timeline Snap Line -->
+            <div class="timeline-snap-line" id="timelineSnapLine"></div>
 
             <!-- Time Ruler -->
             <div class="timeline-ruler" id="timelineTimeRuler">
@@ -1745,7 +1770,20 @@ function initDraggableSubtitles() {
         const deltaPx = e.clientY - startY;
         const deltaPct = (deltaPx / rect.height) * 100;
         let newTop = clamp(initialTop + deltaPct, 8, 92);
+
+        // Snap subtitles to standard viral positions (72% viral short or 50% center)
+        let snapped = false;
+        if (window.studioSnapEnabled) {
+            if (Math.abs(newTop - 72) < 2.5) {
+                newTop = 72;
+                snapped = true;
+            } else if (Math.abs(newTop - 50) < 2.5) {
+                newTop = 50;
+                snapped = true;
+            }
+        }
         capview.style.top = newTop + '%';
+        showSnapGuides(false, snapped, 0, newTop);
 
         const posSlider = $('#inspectorPosSlider');
         const posVal = $('#inspectorPosVal');
@@ -1761,13 +1799,51 @@ function initDraggableSubtitles() {
         if (isDragging) {
             isDragging = false;
             capview.style.cursor = 'grab';
+            showSnapGuides(false, false, 0, 0);
         }
     });
 }
 
 /* ============================================================
-   CANVAS PANNING (DRAGGING TO FRAME VIDEO)
+   CANVAS PANNING & SNAP TO GRID (RULE OF THIRDS + CENTER)
 ============================================================ */
+window.canvasGridEnabled = true;
+window.studioSnapEnabled = true;
+
+function toggleCanvasGrid() {
+    window.canvasGridEnabled = !window.canvasGridEnabled;
+    window.studioSnapEnabled = window.canvasGridEnabled;
+    const overlay = $('#canvasGridOverlay');
+    if (overlay) overlay.classList.toggle('visible', window.canvasGridEnabled);
+    const btn = $('#btnToggleGrid');
+    if (btn) btn.classList.toggle('active', window.canvasGridEnabled);
+    toast(window.canvasGridEnabled ? 'Composition Grid & Snapping: ON 🧲' : 'Grid & Snapping: OFF');
+}
+
+function showSnapGuides(snappedX, snappedY, px, py) {
+    const gv = $('#snapGuideV');
+    const gh = $('#snapGuideH');
+    const badge = $('#snapBadge');
+    const badgeTxt = $('#snapBadgeText');
+
+    if (gv) gv.classList.toggle('active', !!snappedX);
+    if (gh) gh.classList.toggle('active', !!snappedY);
+
+    if (badge) {
+        const isCentered = (snappedX && Math.abs(px) < 3) || (snappedY && Math.abs(py) < 3);
+        const isGrid = snappedX || snappedY;
+        if (isCentered) {
+            badge.classList.add('visible');
+            if (badgeTxt) badgeTxt.textContent = 'Centered 🧲';
+        } else if (isGrid) {
+            badge.classList.add('visible');
+            if (badgeTxt) badgeTxt.textContent = `Snap Grid: ${Math.round(px)}px`;
+        } else {
+            badge.classList.remove('visible');
+        }
+    }
+}
+
 function initVideoPanning() {
     const stage = $('#cinemaStage');
     if (!stage) return;
@@ -1794,9 +1870,42 @@ function initVideoPanning() {
         if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
             hasMoved = true;
             stage.style.cursor = 'move';
-            videoTransform.panX = origPanX + dx;
-            videoTransform.panY = origPanY + dy;
+            let targetX = origPanX + dx;
+            let targetY = origPanY + dy;
+            let snappedX = false;
+            let snappedY = false;
+
+            if (window.studioSnapEnabled) {
+                // Snap to Center X = 0 (14px magnetic threshold)
+                if (Math.abs(targetX) < 14) {
+                    targetX = 0;
+                    snappedX = true;
+                } else if (window.canvasGridEnabled) {
+                    // Snap to 25px grid steps
+                    const nearestGrid = Math.round(targetX / 25) * 25;
+                    if (Math.abs(targetX - nearestGrid) < 6) {
+                        targetX = nearestGrid;
+                        snappedX = true;
+                    }
+                }
+
+                // Snap to Center Y = 0 (14px magnetic threshold)
+                if (Math.abs(targetY) < 14) {
+                    targetY = 0;
+                    snappedY = true;
+                } else if (window.canvasGridEnabled) {
+                    const nearestGrid = Math.round(targetY / 25) * 25;
+                    if (Math.abs(targetY - nearestGrid) < 6) {
+                        targetY = nearestGrid;
+                        snappedY = true;
+                    }
+                }
+            }
+
+            videoTransform.panX = targetX;
+            videoTransform.panY = targetY;
             applyVideoTransforms();
+            showSnapGuides(snappedX, snappedY, targetX, targetY);
         }
     });
 
@@ -1804,6 +1913,7 @@ function initVideoPanning() {
         if (isPanning) {
             isPanning = false;
             stage.style.cursor = '';
+            showSnapGuides(false, false, 0, 0);
             if (!hasMoved) {
                 window.toggleStudioPlay();
             }
