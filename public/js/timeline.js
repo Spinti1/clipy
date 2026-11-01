@@ -2,15 +2,13 @@
 (function() {
     window.Timeline = {
         state: {
-            duration: 15.0,
+            duration: 0.0,
             currentTime: 0.0,
             zoom: 60, // pixels per second
             snapping: true,
             selectedTrack: 'video',
-            selectedClipId: 'clip-1',
-            clips: [
-                { id: 'clip-1', start: 0.0, end: 15.0, name: 'Main Video' }
-            ],
+            selectedClipId: null,
+            clips: [],
             subtitles: [],
             audioTrack: null,
             blurBoxes: [],
@@ -89,6 +87,7 @@
             let isDragging = false;
 
             const updateTimeFromPointer = (e) => {
+                if (this.state.duration <= 0) return;
                 const rect = tracksViewport.getBoundingClientRect();
                 const scrollLeft = tracksViewport.scrollLeft;
                 const offsetX = (e.clientX - rect.left + scrollLeft) - 85; // minus header offset
@@ -130,7 +129,29 @@
 
             if (job.captions && job.captions.words) {
                 this.state.subtitles = job.captions.words;
+            } else {
+                this.state.subtitles = [];
             }
+            this.state.audioTrack = job.result.video || null;
+            this.state.blurBoxes = (job.tools && job.tools.blur) || [];
+
+            this.fitToWidth();
+            this.renderRuler();
+            this.renderTracks();
+            this.updatePlayhead();
+        },
+
+        loadLocalClip(name, dur = 15.0) {
+            const d = Math.max(1.0, parseFloat(dur));
+            this.state.duration = d;
+            this.state.currentTime = 0.0;
+            this.state.clips = [
+                { id: 'clip-1', start: 0.0, end: d, name: name || 'Video Clip' }
+            ];
+            this.state.selectedClipId = 'clip-1';
+            this.state.subtitles = [];
+            this.state.audioTrack = null;
+            this.state.blurBoxes = [];
 
             this.fitToWidth();
             this.renderRuler();
@@ -155,13 +176,14 @@
         },
 
         setTime(sec, syncVideo = false) {
+            if (this.state.duration <= 0) return;
             this.state.currentTime = Math.max(0, Math.min(this.state.duration, sec));
             this.updatePlayhead();
 
             // Sync main active video player
             if (syncVideo) {
                 const vid = document.querySelector('video.main');
-                if (vid && isFinite(vid.duration)) {
+                if (vid && isFinite(vid.duration) && vid.duration > 0) {
                     vid.currentTime = this.state.currentTime;
                 }
             }
@@ -183,7 +205,8 @@
         renderRuler() {
             const ruler = document.getElementById('timelineTimeRuler');
             if (!ruler) return;
-            const totalWidth = Math.max(600, this.state.duration * this.state.zoom);
+            const maxDur = Math.max(15.0, this.state.duration || 0);
+            const totalWidth = Math.max(600, maxDur * this.state.zoom);
             ruler.style.width = `${totalWidth}px`;
 
             // Step interval based on zoom
@@ -194,7 +217,7 @@
             else step = 1;
 
             let html = '';
-            for (let t = 0; t <= this.state.duration; t += step) {
+            for (let t = 0; t <= maxDur; t += step) {
                 const left = t * this.state.zoom;
                 html += `
                     <div style="position:absolute; left:${left}px; bottom:2px; font-size:0.58rem; color:#525866; font-family:'JetBrains Mono',monospace;">
@@ -218,7 +241,7 @@
             if (!track) return;
             const words = this.state.subtitles;
             if (!words || !words.length) {
-                track.innerHTML = `<div style="font-size:0.65rem; color:#64748b; padding:4px 8px;">No captions generated yet</div>`;
+                track.innerHTML = `<div style="height:100%; display:flex; align-items:center; padding:0 12px; font-size:0.65rem; color:#64748b; font-style:italic;">No captions yet</div>`;
                 return;
             }
 
@@ -252,6 +275,16 @@
             if (!track) return;
             const clips = this.state.clips;
 
+            if (!clips || !clips.length) {
+                track.innerHTML = `
+                    <div style="height:100%; display:flex; align-items:center; padding:0 14px; font-size:0.68rem; color:#64748b; font-style:italic; gap:6px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        No video media on timeline. Upload a video or paste a link above.
+                    </div>
+                `;
+                return;
+            }
+
             track.innerHTML = clips.map(clip => {
                 const left = clip.start * this.state.zoom;
                 const width = Math.max(20, (clip.end - clip.start) * this.state.zoom);
@@ -278,6 +311,10 @@
         renderAudioTrack() {
             const track = document.getElementById('trackAudio');
             if (!track) return;
+            if (!this.state.audioTrack) {
+                track.innerHTML = `<div style="height:100%; display:flex; align-items:center; padding:0 12px; font-size:0.65rem; color:#64748b; font-style:italic;">Original audio (no AI dubbing yet)</div>`;
+                return;
+            }
             const dur = this.state.duration;
             const width = Math.max(60, dur * this.state.zoom);
 
@@ -294,6 +331,10 @@
         renderBlurTrack() {
             const track = document.getElementById('trackBlur');
             if (!track) return;
+            if (!this.state.blurBoxes || !this.state.blurBoxes.length) {
+                track.innerHTML = `<div style="height:100%; display:flex; align-items:center; padding:0 12px; font-size:0.65rem; color:#64748b; font-style:italic;">No blur zones</div>`;
+                return;
+            }
             const dur = this.state.duration;
             const left = dur * 0.15 * this.state.zoom;
             const width = Math.max(40, (dur * 0.4) * this.state.zoom);
@@ -311,6 +352,10 @@
         },
 
         splitAtPlayhead() {
+            if (!this.state.clips || this.state.clips.length === 0) {
+                if (window.toast) window.toast('Please import a video before splitting.');
+                return;
+            }
             const t = this.state.currentTime;
             // Find which clip currently covers t
             const clipIdx = this.state.clips.findIndex(c => t > (c.start + 0.1) && t < (c.end - 0.1));
@@ -338,7 +383,7 @@
         },
 
         deleteSelectedClip() {
-            if (this.state.clips.length <= 1) {
+            if (!this.state.clips || this.state.clips.length <= 1) {
                 if (window.toast) window.toast('Cannot delete the only clip in project.');
                 return;
             }
@@ -365,6 +410,7 @@
         },
 
         duplicateSelectedClip() {
+            if (!this.state.clips || this.state.clips.length === 0) return;
             const idx = this.state.clips.findIndex(c => c.id === this.state.selectedClipId);
             if (idx === -1) return;
             const orig = this.state.clips[idx];

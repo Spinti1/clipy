@@ -130,20 +130,8 @@
         
         <!-- 1. Far Left Icon Ribbon (60px) -->
         <nav class="studio-rail" id="studioRail">
-            <!-- Tab: AI Tools -->
-            <button class="rail-btn active" data-tab="ai" title="AI Smart Tools">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
-                    <path d="M5 3v4"></path>
-                    <path d="M19 17v4"></path>
-                    <path d="M3 5h4"></path>
-                    <path d="M17 19h4"></path>
-                </svg>
-                <span class="rail-label">AI Studio</span>
-            </button>
-
-            <!-- Tab: Quick Generator (Adapted Legacy Section) -->
-            <button class="rail-btn" data-tab="rapid" title="Quick Video Generator">
+            <!-- Tab: Quick Generator (Adapted Legacy Section - Default Active) -->
+            <button class="rail-btn active" data-tab="rapid" title="Generator & Importer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
@@ -188,28 +176,40 @@
                 </svg>
                 <span class="rail-label">Audio</span>
             </button>
+
+            <!-- Tab: AI Tools -->
+            <button class="rail-btn" data-tab="ai" title="AI Video Magic Tools">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+                    <path d="M5 3v4"></path>
+                    <path d="M19 17v4"></path>
+                    <path d="M3 5h4"></path>
+                    <path d="M17 19h4"></path>
+                </svg>
+                <span class="rail-label">AI Studio</span>
+            </button>
         </nav>
 
         <!-- 2. Expandable Flyout Drawer (280px) -->
         <aside class="studio-drawer" id="studioDrawer">
-            <!-- TAB 1: AI STUDIO -->
-            <div id="drawerTabAI" class="drawer-tab-view">
+            <!-- TAB 1: QUICK GENERATOR (Target for SetupBox Container - Open by default) -->
+            <div id="drawerTabRapid" class="drawer-tab-view">
+                <div class="drawer-header">
+                    <span>Quick Generator</span>
+                    <span style="font-size: 0.62rem; font-weight: 700; color: #10b981;">ONLINE</span>
+                </div>
+                <div class="drawer-content" id="rapidContentMount" style="padding: 10px;">
+                    <!-- Mounted dynamically from setupBoxContainer -->
+                </div>
+            </div>
+
+            <!-- TAB 2: AI STUDIO -->
+            <div id="drawerTabAI" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
                     <span>Smart AI Tools</span>
                     <span style="font-size: 0.62rem; font-weight: 700; background: rgba(124,58,237,0.18); color: #c4b5fd; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(124,58,237,0.3);">PRO</span>
                 </div>
                 <div class="drawer-content">
-                    <!-- Dropzone -->
-                    <div id="studioDropzone" style="background: rgba(255,255,255,0.02); border: 1.5px dashed rgba(255,255,255,0.12); border-radius: 8px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="$('#fileInput').click()">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px;">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        <div style="font-size: 0.78rem; font-weight: 700; color: #f1f5f9;">Import file or link</div>
-                        <div style="font-size: 0.65rem; color: #71788e; margin-top: 2px;">Drop video file here or paste URL</div>
-                    </div>
-
                     <!-- AI Tool Cards -->
                     <div class="ai-tool-card active" onclick="activateDrawerTab('rapid')">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
@@ -264,24 +264,24 @@
                 </div>
             </div>
 
-            <!-- TAB 2: QUICK GENERATOR (Target for SetupBox Container) -->
-            <div id="drawerTabRapid" class="drawer-tab-view" hidden>
-                <div class="drawer-header">
-                    <span>Quick Generator</span>
-                    <span style="font-size: 0.62rem; font-weight: 700; color: #10b981;">ONLINE</span>
-                </div>
-                <div class="drawer-content" id="rapidContentMount">
-                    <!-- Mounted dynamically or populated from setupBox -->
-                </div>
-            </div>
-
             <!-- TAB 3: MEDIA -->
             <div id="drawerTabMedia" class="drawer-tab-view" hidden>
                 <div class="drawer-header">
-                    <span>Media & Files</span>
-                    <button class="clipy-btn" style="padding: 2px 8px; font-size: 0.68rem;" onclick="$('#fileInput').click()">+ Upload</button>
+                    <span>Media Library</span>
+                    <button class="clipy-btn" style="padding: 2px 8px; font-size: 0.68rem; background: #7c3aed; color: #fff; border: none;" onclick="$('#fileInput').click()">+ Upload</button>
                 </div>
                 <div class="drawer-content">
+                    <!-- Dropzone -->
+                    <div id="studioDropzone" style="background: rgba(255,255,255,0.02); border: 1.5px dashed rgba(255,255,255,0.12); border-radius: 8px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 10px;" onclick="$('#fileInput').click()">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 4px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #f1f5f9;">Upload Video File</div>
+                        <div style="font-size: 0.65rem; color: #71788e; margin-top: 2px;">MP4, MOV, WebM, MKV</div>
+                    </div>
+
                     <button class="clipy-btn" style="justify-content: center; width: 100%;" onclick="loadSampleVideoIntoStudio()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -353,34 +353,58 @@
         <main class="studio-canvas" id="studioCanvasArea">
             <!-- Studio Viewport with aspect ratio -->
             <div class="studio-viewport aspect-9-16" id="studioViewport">
-                <!-- Floating Title Header -->
-                <div class="studio-title-pill" id="studioTitlePill">
+                <!-- Floating Title Header (hidden initially until video is loaded) -->
+                <div class="studio-title-pill" id="studioTitlePill" style="display: none;">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                     </svg>
-                    <span id="studioTitleText">SECRETS OF A VIRAL VIDEO</span>
+                    <span id="studioTitleText">Video Project</span>
                 </div>
 
                 <!-- Video Stage -->
                 <div class="cinema-stage stage" id="cinemaStage" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;">
                     <div class="flip" id="cinemaFlip" style="position: absolute; inset: 0; width: 100%; height: 100%;">
                         <video class="mask-bg" id="cinemaMaskBg" muted playsinline preload="auto" hidden style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(20px); transform: scale(1.6);"></video>
-                        <video class="main" id="cinemaMainVideo" playsinline preload="metadata" src="/assets/sample.mp4" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;"></video>
+                        <video class="main" id="cinemaMainVideo" playsinline preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;"></video>
                     </div>
                     <audio class="voiceover" id="cinemaVoiceover" preload="auto" muted hidden></audio>
                     <div class="boxes" id="cinemaBoxes" style="position: absolute; inset: 0; pointer-events: auto;"></div>
                     <div class="capview" id="cinemaCapview" style="position: absolute; left: 50%; top: 72%; transform: translate(-50%, -50%); width: 88%; text-align: center; pointer-events: none; z-index: 50;"></div>
                 </div>
 
+                <!-- Empty Project Welcome / Dropzone Overlay -->
+                <div class="studio-empty-state" id="studioEmptyState">
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(124, 58, 237, 0.16); border: 1.5px dashed rgba(167, 139, 250, 0.5); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; color: #a78bfa;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <h3 style="font-size: 1.02rem; font-weight: 700; color: #f8fafc; margin: 0 0 6px 0;">Start Your Video</h3>
+                    <p style="font-size: 0.74rem; color: #94a3b8; max-width: 250px; margin: 0 0 16px 0; line-height: 1.4;">
+                        Drop any video here, paste a link, or load a sample to start editing.
+                    </p>
+                    <button type="button" class="clipy-btn" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; font-weight: 700; padding: 8px 18px; font-size: 0.78rem; border-radius: 8px; box-shadow: 0 4px 14px rgba(124,58,237,0.35); cursor: pointer; border: none; margin-bottom: 12px;" onclick="$('#fileInput').click()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        Upload Video File
+                    </button>
+                    <div style="display: flex; gap: 6px; width: 100%; max-width: 250px; margin-bottom: 12px;">
+                        <input type="text" id="emptyUrlInput" placeholder="Paste video link..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px 10px; font-size: 0.72rem; color: #fff; outline: none;" onkeydown="if(event.key==='Enter') window.importUrlFromEmpty();">
+                        <button type="button" class="clipy-btn" style="padding: 6px 10px; font-size: 0.72rem; font-weight: 600;" onclick="window.importUrlFromEmpty()">Import</button>
+                    </div>
+                    <button type="button" style="background: transparent; border: none; color: #a78bfa; font-size: 0.7rem; cursor: pointer; text-decoration: underline;" onclick="loadSampleVideoIntoStudio()">
+                        or try Demo Sample Video
+                    </button>
+                </div>
+
                 <!-- Active Selection Transform Box -->
-                <div class="studio-bbox" id="studioBbox">
+                <div class="studio-bbox" id="studioBbox" style="display: none;">
                     <div class="studio-bbox-dot tl"></div>
                     <div class="studio-bbox-dot tr"></div>
                     <div class="studio-bbox-dot bl"></div>
                     <div class="studio-bbox-dot br"></div>
-                    <div id="studioBboxText" style="background: #65d69e; color: #07130d; font-family: 'Impact', sans-serif; font-size: 0.88rem; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.02em;">
-                        THIS EXACT TRICK
-                    </div>
+                    <div id="studioBboxText"></div>
                 </div>
 
                 <div></div>
@@ -867,13 +891,13 @@ function toast(msg) {
     toastTimer = setTimeout(() => t.classList.remove('show'), 3600);
 }
 
-// Purge obsolete localtunnel URLs from localStorage if present
+// Purge obsolete backend URLs from localStorage if present
 const storedBackend = localStorage.getItem('clipy_backend_url') || '';
-if (storedBackend.includes('loca.lt')) {
+if (storedBackend.includes('loca.lt') || storedBackend.includes('trycloudflare.com')) {
     localStorage.removeItem('clipy_backend_url');
 }
 
-const DEFAULT_REMOTE_BACKEND = 'https://small-favour-explore-interventions.trycloudflare.com';
+const DEFAULT_REMOTE_BACKEND = 'https://clipy-backend.onrender.com';
 let API_BASE = window.API_BASE || localStorage.getItem('clipy_backend_url') || (
     (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
         ? DEFAULT_REMOTE_BACKEND
@@ -1229,8 +1253,13 @@ function loadCardIntoStudio(c) {
     const r = c.job.result;
     const mainVid = $('#cinemaMainVideo');
     const maskVid = $('#cinemaMaskBg');
+    const emptyState = $('#studioEmptyState');
+    const titlePill = $('#studioTitlePill');
     const titleText = $('#studioTitleText');
     const projectTitle = $('#studioProjectTitle');
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (titlePill) titlePill.style.display = 'flex';
 
     if (mainVid) {
         const vidUrl = resolveUrl(r.video);
@@ -1251,19 +1280,80 @@ function loadCardIntoStudio(c) {
 
 function loadSampleVideoIntoStudio() {
     const mainVid = $('#cinemaMainVideo');
+    const maskVid = $('#cinemaMaskBg');
+    const emptyState = $('#studioEmptyState');
+    const titlePill = $('#studioTitlePill');
+    const titleText = $('#studioTitleText');
+    const projectTitle = $('#studioProjectTitle');
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (titlePill) titlePill.style.display = 'flex';
+    if (titleText) titleText.textContent = 'Sample HD Video';
+    if (projectTitle) projectTitle.value = 'Sample_HD_Video';
+
     if (mainVid) {
         mainVid.src = '/assets/sample.mp4';
         mainVid.currentTime = 0;
+        mainVid.onloadedmetadata = () => {
+            const dur = mainVid.duration || 15.0;
+            if (window.Timeline) {
+                Timeline.loadLocalClip('Sample HD Video', dur);
+            }
+            const tc = $('#studioTimecode');
+            if (tc) tc.innerHTML = `00:00.00 <span style="color:#64748b;">/ ${fmtTime(dur)}</span>`;
+        };
     }
-    if (window.Timeline) {
-        Timeline.state.duration = 15.0;
-        Timeline.state.clips = [{ id: 'clip-sample', start: 0, end: 15.0, name: 'Sample HD Video' }];
-        Timeline.renderRuler();
-        Timeline.renderTracks();
-        Timeline.updatePlayhead();
+    if (maskVid) {
+        maskVid.src = '/assets/sample.mp4';
     }
     toast('Sample video loaded into Clipy Studio!');
 }
+
+window.loadLocalVideoIntoStudio = function(fileObj) {
+    if (!fileObj || !fileObj.url) return;
+    const mainVid = $('#cinemaMainVideo');
+    const maskVid = $('#cinemaMaskBg');
+    const emptyState = $('#studioEmptyState');
+    const titlePill = $('#studioTitlePill');
+    const titleText = $('#studioTitleText');
+    const projectTitle = $('#studioProjectTitle');
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (titlePill) titlePill.style.display = 'flex';
+    if (titleText) titleText.textContent = fileObj.uploadName;
+    if (projectTitle) projectTitle.value = fileObj.uploadName.replace(/\.[^/.]+$/, '').slice(0, 30);
+
+    if (mainVid) {
+        mainVid.src = fileObj.url;
+        mainVid.onloadedmetadata = () => {
+            const dur = mainVid.duration || 10.0;
+            if (window.Timeline) {
+                Timeline.loadLocalClip(fileObj.uploadName, dur);
+            }
+            const tc = $('#studioTimecode');
+            if (tc) tc.innerHTML = `00:00.00 <span style="color:#64748b;">/ ${fmtTime(dur)}</span>`;
+        };
+    }
+    if (maskVid) {
+        maskVid.src = fileObj.url;
+    }
+    toast(`Loaded ${fileObj.uploadName} into Clipy Studio! ⚡`);
+};
+
+window.importUrlFromEmpty = function() {
+    const inp = $('#emptyUrlInput');
+    if (!inp || !inp.value.trim()) return;
+    const url = inp.value.trim();
+    activateDrawerTab('rapid');
+    const firstRowInput = $('#urlList .url-input');
+    if (firstRowInput) {
+        firstRowInput.value = url;
+        SetupPanel.refreshRows();
+        firstRowInput.focus();
+    }
+    toast('Link loaded into Generator! Configure voice & click Generate ⚡');
+    inp.value = '';
+};
 
 function autoRemoveSilence() {
     toast('Auto-Cut Silence: analyzing dead pauses... ✂️');
@@ -1410,6 +1500,10 @@ function initCinemaControls() {
     if (!vid) return;
 
     window.toggleStudioPlay = function() {
+        if (!vid.src || vid.src === window.location.href) {
+            toast('Please import a video first! ⚡');
+            return;
+        }
         if (vid.paused) {
             vid.play().catch(() => {});
             if (playIcon) playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
@@ -1423,8 +1517,8 @@ function initCinemaControls() {
     const stage = $('#cinemaStage');
     if (stage) stage.onclick = window.toggleStudioPlay;
 
-    if (skipBack) skipBack.onclick = () => { vid.currentTime = Math.max(0, vid.currentTime - 5); };
-    if (skipFwd) skipFwd.onclick = () => { vid.currentTime = Math.min(vid.duration || 15, vid.currentTime + 5); };
+    if (skipBack) skipBack.onclick = () => { if (vid.src) vid.currentTime = Math.max(0, vid.currentTime - 5); };
+    if (skipFwd) skipFwd.onclick = () => { if (vid.src) vid.currentTime = Math.min(vid.duration || 15, vid.currentTime + 5); };
 
     vid.ontimeupdate = () => {
         if (window.Timeline) {
@@ -1460,6 +1554,28 @@ function initCinemaControls() {
         };
     }
 
+    // Drag and drop video directly into viewport
+    const viewport = $('#studioViewport');
+    if (viewport) {
+        viewport.ondragover = e => {
+            e.preventDefault();
+            const empty = $('#studioEmptyState');
+            if (empty) empty.classList.add('drag-over');
+        };
+        viewport.ondragleave = () => {
+            const empty = $('#studioEmptyState');
+            if (empty) empty.classList.remove('drag-over');
+        };
+        viewport.ondrop = e => {
+            e.preventDefault();
+            const empty = $('#studioEmptyState');
+            if (empty) empty.classList.remove('drag-over');
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                SetupPanel.addFiles(e.dataTransfer.files);
+            }
+        };
+    }
+
     // Top Export MP4 Button
     const expBtn = $('#studioExportBtn');
     if (expBtn) {
@@ -1467,8 +1583,17 @@ function initCinemaControls() {
             const card = window.activeStudioCard || [...cards.values()][0];
             if (card) {
                 VideoExporter.exportAndDownload(card);
+            } else if (vid && vid.src && !vid.src.endsWith('/sample.mp4') && vid.src !== window.location.href) {
+                toast('Downloading video clip... ⚡');
+                const a = document.createElement('a');
+                a.href = vid.src;
+                const title = ($('#studioProjectTitle').value || 'clipy_edit').trim();
+                a.download = `${title}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             } else {
-                toast('Please process or select a video before exporting! ⚡');
+                toast('Please import or generate a video before exporting! ⚡');
             }
         };
     }
@@ -1599,6 +1724,7 @@ const DEFAULT_CONFIG = {
 
     // Default mode: Studio Pro, but smoothly mount setup box inside drawer
     switchWorkspaceMode('studio');
+    activateDrawerTab('rapid');
 
     window.openBackendModal = function() {
         const m = $('#backend-modal');

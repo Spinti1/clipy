@@ -688,10 +688,43 @@ kbd { font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:1px 5px;
     border: 1.5px solid var(--studio-accent-purple);
     border-radius: 4px;
     pointer-events: none;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 25;
+}
+.studio-bbox.active {
+    display: flex;
+}
+.studio-empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    background: radial-gradient(circle at center, rgba(30, 33, 48, 0.92) 0%, rgba(13, 15, 22, 0.98) 100%);
+    z-index: 30;
+    border-radius: 8px;
+    border: 2px dashed rgba(167, 139, 250, 0.25);
+    transition: all 0.25s ease;
+}
+.studio-empty-state.drag-over {
+    border-color: #a78bfa;
+    background: radial-gradient(circle at center, rgba(50, 40, 80, 0.95) 0%, rgba(18, 16, 32, 0.98) 100%);
+    transform: scale(1.01);
+}
+.timeline-empty-hint {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    font-size: 0.65rem;
+    color: #64748b;
+    font-style: italic;
+    user-select: none;
 }
 .studio-bbox-dot {
     position: absolute;

@@ -143,6 +143,7 @@
         },
 
         addFiles(files) {
+            let firstObj = null;
             for (const f of [...files]) {
                 const id = ++upSeq;
                 const row = document.createElement('div');
@@ -158,9 +159,13 @@
                 $('#fileList').appendChild(row);
                 const obj = { id, file: f, url: URL.createObjectURL(f), uploadName: f.name, el: row };
                 uploads.set(id, obj);
+                if (!firstObj) firstObj = obj;
                 $('.remove-btn', row).onclick = () => { row.remove(); uploads.delete(id); this.refreshRows(); };
             }
             this.refreshRows();
+            if (firstObj && window.loadLocalVideoIntoStudio) {
+                window.loadLocalVideoIntoStudio(firstObj);
+            }
             toast(`${files.length} video${files.length > 1 ? 's' : ''} added successfully!`);
         },
 
