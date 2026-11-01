@@ -229,35 +229,54 @@
         },
 
         renderBlurBoxes(c) {
-            $('.boxes', c.el).innerHTML = c.tools.blur.map((b, i) => `
-                <div class="bbox" data-i="${i}" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%">
-                    <span class="rm" data-a="rmBox" data-i="${i}">×</span>
-                    <span class="rs"></span>
-                </div>
-            `).join('');
-            $('[data-a=blurTool]', c.el).classList.toggle('on', c.tools.blur.length > 0);
+            const boxes = $('.boxes', c.el);
+            if (boxes) {
+                boxes.innerHTML = c.tools.blur.map((b, i) => `
+                    <div class="bbox" data-i="${i}" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%">
+                        <span class="rm" data-a="rmBox" data-i="${i}">×</span>
+                        <span class="rs"></span>
+                    </div>
+                `).join('');
+            }
+            const studioBoxes = document.getElementById('cinemaBoxes');
+            if (studioBoxes && (c === window.activeStudioCard || !c.el)) {
+                studioBoxes.innerHTML = c.tools.blur.map((b, i) => `
+                    <div class="bbox" data-i="${i}" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%">
+                        <span class="rm" data-a="rmBox" data-i="${i}">×</span>
+                        <span class="rs"></span>
+                    </div>
+                `).join('');
+            }
+            const toolBtn = $('[data-a=blurTool]', c.el);
+            if (toolBtn) toolBtn.classList.toggle('on', c.tools.blur.length > 0);
         },
 
         applyMask(c) {
             const m = c.tools.mask;
             const main = $('video.main', c.el);
             const bg = $('video.mask-bg', c.el);
+            const cMain = document.getElementById('cinemaMainVideo');
+            const cBg = document.getElementById('cinemaMaskBg');
+
             if (m.enabled) {
                 const top = Math.max(0, (m.posY - m.thickness / 2) * 100);
                 const bot = Math.min(100, (m.posY + m.thickness / 2) * 100);
                 const g = `linear-gradient(to bottom, transparent ${top}%, #000 ${top}%, #000 ${bot}%, transparent ${bot}%)`;
-                main.style.webkitMaskImage = g;
-                main.style.maskImage = g;
+                if (main) { main.style.webkitMaskImage = g; main.style.maskImage = g; }
+                if (cMain && c === window.activeStudioCard) { cMain.style.webkitMaskImage = g; cMain.style.maskImage = g; }
+
                 if (m.blackBg) {
-                    bg.hidden = true;
+                    if (bg) bg.hidden = true;
+                    if (cBg && c === window.activeStudioCard) cBg.hidden = true;
                 } else {
-                    bg.hidden = false;
-                    bg.style.transform = `scale(${m.zoom})`;
+                    if (bg) { bg.hidden = false; bg.style.transform = `scale(${m.zoom})`; }
+                    if (cBg && c === window.activeStudioCard) { cBg.hidden = false; cBg.style.transform = `scale(${m.zoom})`; }
                 }
             } else {
-                main.style.webkitMaskImage = '';
-                main.style.maskImage = '';
-                bg.hidden = true;
+                if (main) { main.style.webkitMaskImage = ''; main.style.maskImage = ''; }
+                if (cMain && c === window.activeStudioCard) { cMain.style.webkitMaskImage = ''; cMain.style.maskImage = ''; }
+                if (bg) bg.hidden = true;
+                if (cBg && c === window.activeStudioCard) cBg.hidden = true;
             }
         },
 
@@ -323,6 +342,15 @@
                     }).join('')}
                 </span>
             `;
+
+            const studioView = document.getElementById('cinemaCapview');
+            if (studioView) {
+                studioView.innerHTML = view.innerHTML;
+                studioView.hidden = false;
+                studioView.style.top = (cap.posY * 100) + '%';
+            }
+            const studioBbox = document.getElementById('studioBbox');
+            if (studioBbox) studioBbox.style.display = 'none';
         }
     };
 })();
